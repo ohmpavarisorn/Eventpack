@@ -19,65 +19,65 @@ build_property.TargetFrameworkIdentifier = .NETCoreApp
 build_property.TargetFrameworkVersion = v10.0
 build_property.RootNamespace = EventPack
 build_property.RootNamespace = EventPack
-build_property.ProjectDir = C:\Users\jomjo\OneDrive\เดสก์ท็อป\EventPack\
+build_property.ProjectDir = C:\Users\jomjo\OneDrive\เดสก์ท็อป\EventPack\Eventpack\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 9.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = C:\Users\jomjo\OneDrive\เดสก์ท็อป\EventPack
+build_property.MSBuildProjectDirectory = C:\Users\jomjo\OneDrive\เดสก์ท็อป\EventPack\Eventpack
 build_property._RazorSourceGeneratorDebug = 
 build_property.EffectiveAnalysisLevelStyle = 10.0
 build_property.EnableCodeStyleSeverity = 
 
-[C:/Users/jomjo/OneDrive/เดสก์ท็อป/EventPack/Views/Account/Lab9.cshtml]
+[C:/Users/jomjo/OneDrive/เดสก์ท็อป/EventPack/Eventpack/Views/Account/Lab9.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxMYWI5LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/jomjo/OneDrive/เดสก์ท็อป/EventPack/Views/Account/Lab9List.cshtml]
+[C:/Users/jomjo/OneDrive/เดสก์ท็อป/EventPack/Eventpack/Views/Account/Lab9List.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxMYWI5TGlzdC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/jomjo/OneDrive/เดสก์ท็อป/EventPack/Views/Account/Login.cshtml]
+[C:/Users/jomjo/OneDrive/เดสก์ท็อป/EventPack/Eventpack/Views/Account/Login.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxMb2dpbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/jomjo/OneDrive/เดสก์ท็อป/EventPack/Views/Account/register.cshtml]
+[C:/Users/jomjo/OneDrive/เดสก์ท็อป/EventPack/Eventpack/Views/Account/register.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxyZWdpc3Rlci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/jomjo/OneDrive/เดสก์ท็อป/EventPack/Views/Admin/userController.cshtml]
+[C:/Users/jomjo/OneDrive/เดสก์ท็อป/EventPack/Eventpack/Views/Admin/userController.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cdXNlckNvbnRyb2xsZXIuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/jomjo/OneDrive/เดสก์ท็อป/EventPack/Views/Home/Index.cshtml]
+[C:/Users/jomjo/OneDrive/เดสก์ท็อป/EventPack/Eventpack/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/jomjo/OneDrive/เดสก์ท็อป/EventPack/Views/Home/Privacy.cshtml]
+[C:/Users/jomjo/OneDrive/เดสก์ท็อป/EventPack/Eventpack/Views/Home/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/jomjo/OneDrive/เดสก์ท็อป/EventPack/Views/Home/Test.cshtml]
+[C:/Users/jomjo/OneDrive/เดสก์ท็อป/EventPack/Eventpack/Views/Home/Test.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxUZXN0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/jomjo/OneDrive/เดสก์ท็อป/EventPack/Views/Shared/Error.cshtml]
+[C:/Users/jomjo/OneDrive/เดสก์ท็อป/EventPack/Eventpack/Views/Shared/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/jomjo/OneDrive/เดสก์ท็อป/EventPack/Views/Shared/_ValidationScriptsPartial.cshtml]
+[C:/Users/jomjo/OneDrive/เดสก์ท็อป/EventPack/Eventpack/Views/Shared/_ValidationScriptsPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/jomjo/OneDrive/เดสก์ท็อป/EventPack/Views/_ViewImports.cshtml]
+[C:/Users/jomjo/OneDrive/เดสก์ท็อป/EventPack/Eventpack/Views/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/jomjo/OneDrive/เดสก์ท็อป/EventPack/Views/_ViewStart.cshtml]
+[C:/Users/jomjo/OneDrive/เดสก์ท็อป/EventPack/Eventpack/Views/_ViewStart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/jomjo/OneDrive/เดสก์ท็อป/EventPack/Views/Shared/_Layout.cshtml]
+[C:/Users/jomjo/OneDrive/เดสก์ท็อป/EventPack/Eventpack/Views/Shared/_Layout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = b-evrdkcf17g

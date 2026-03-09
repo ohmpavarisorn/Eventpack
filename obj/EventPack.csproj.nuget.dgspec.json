@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\jomjo\\OneDrive\\เดสก์ท็อป\\EventPack\\EventPack.csproj": {}
+    "C:\\Users\\jomjo\\OneDrive\\เดสก์ท็อป\\EventPack\\Eventpack\\EventPack.csproj": {}
   },
   "projects": {
-    "C:\\Users\\jomjo\\OneDrive\\เดสก์ท็อป\\EventPack\\EventPack.csproj": {
+    "C:\\Users\\jomjo\\OneDrive\\เดสก์ท็อป\\EventPack\\Eventpack\\EventPack.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\jomjo\\OneDrive\\เดสก์ท็อป\\EventPack\\EventPack.csproj",
+        "projectUniqueName": "C:\\Users\\jomjo\\OneDrive\\เดสก์ท็อป\\EventPack\\Eventpack\\EventPack.csproj",
         "projectName": "EventPack",
-        "projectPath": "C:\\Users\\jomjo\\OneDrive\\เดสก์ท็อป\\EventPack\\EventPack.csproj",
+        "projectPath": "C:\\Users\\jomjo\\OneDrive\\เดสก์ท็อป\\EventPack\\Eventpack\\EventPack.csproj",
         "packagesPath": "C:\\Users\\jomjo\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\jomjo\\OneDrive\\เดสก์ท็อป\\EventPack\\obj\\",
+        "outputPath": "C:\\Users\\jomjo\\OneDrive\\เดสก์ท็อป\\EventPack\\Eventpack\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\jomjo\\AppData\\Roaming\\NuGet\\NuGet.Config"
