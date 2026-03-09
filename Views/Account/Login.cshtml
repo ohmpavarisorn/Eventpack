@@ -1,0 +1,34 @@
+@using EventPack.ViewModels
+@model LabUserViewModels
+<div class="container">
+    <form asp-controller="Account" asp-action="register">
+
+        <div class="row align-items-center mb-3">
+            <div class="col-auto">
+                <label class="col-form-label">Username</label>
+            </div>
+            <div class="col">
+                <input type="text" class="form-control" name="username">
+            </div>
+        </div>
+
+        <div class="row align-items-center mb-3">
+            <div class="col-auto">
+                <label class="col-form-label">Password</label>
+            </div>
+            <div class="col">
+                <input type="password" class="form-control" name="password">
+            </div>
+        </div>
+        
+        <div class="text-end">
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+    </form>
+    @ViewBag.Name <br />
+    @ViewBag.Password <br />    
+    @ViewBag.Phone <br />
+    @ViewBag.Address <br />
+    @ViewBag.ConfirmPassword <br />
+
+</div>

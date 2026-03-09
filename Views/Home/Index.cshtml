@@ -1,0 +1,30 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+    
+}
+@using EventPack.Models.Db;
+@model IEnumerable<EventPack.Models.Db.Userinformation>
+
+<h2>User List</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>UserID</th>
+            <th>Phone</th>
+            <th>Full Name</th>
+            <th>Address</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.UserId</td>
+                <td>@user.UserPhone</td>
+                <td>@user.FullName</td>
+                <td>@user.UserAddress</td>
+            </tr>
+        }
+    </tbody>
+</table>
