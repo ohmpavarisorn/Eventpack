@@ -43,37 +43,60 @@
                 </li>
             </ul>
 
-            <!-- ปุ่ม Login -->
+            <!-- User Info & Login/Logout -->
             <ul class="navbar-nav">
-    <li class="nav-item">
-
-        @if (controller == "Account" && action == "Login")
-        {
-            <a class="btn btn-outline-light"
-               asp-controller="Account"
-               asp-action="Register">
-                Register
-            </a>
-        }
-        else if (controller == "Account" && action == "Register")
-        {
-            <a class="btn btn-outline-light"
-               asp-controller="Account"
-               asp-action="Login">
-                Login
-            </a>
-        }
-        else
-        {
-            <a class="btn btn-outline-light"
-               asp-controller="Account"
-               asp-action="Login">
-                Login
-            </a>
-        }
-
-    </li>
-</ul>
+                @{
+                    var userId = Context.Session.GetString("UserId");
+                    var fullName = Context.Session.GetString("FullName");
+                }
+                
+                @if (!string.IsNullOrEmpty(userId))
+                {
+                    <!-- Logged In User -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" style="color: #d97706; font-weight: 600;">
+                            👤 @fullName
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark">
+                            <li>
+                                <a class="dropdown-item" asp-controller="Booking" asp-action="MyBookings">
+                                    📋 การจองของฉัน
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" asp-controller="Account" asp-action="Logout">
+                                    🚪 ออกจากระบบ
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                }
+                else
+                {
+                    <!-- Not Logged In -->
+                    <li class="nav-item">
+                        @if (controller == "Account" && action == "Login")
+                        {
+                            <a class="btn btn-outline-light" asp-controller="Account" asp-action="Register" style="margin-left: 10px;">
+                                สมัครสมาชิก
+                            </a>
+                        }
+                        else if (controller == "Account" && action == "Register")
+                        {
+                            <a class="btn btn-outline-light" asp-controller="Account" asp-action="Login" style="margin-left: 10px;">
+                                เข้าสู่ระบบ
+                            </a>
+                        }
+                        else
+                        {
+                            <a class="btn btn-outline-light" asp-controller="Account" asp-action="Login" style="margin-left: 10px;">
+                                เข้าสู่ระบบ
+                            </a>
+                        }
+                    </li>
+                }
+            </ul>
 
         </div>
     </div>

@@ -1,0 +1,336 @@
+@{
+    ViewData["Title"] = "จองแพคเกจ";
+}
+
+<div class="booking-container">
+    <div class="booking-card">
+        <div class="booking-header">
+            <h2>📋 จองแพคเกจของคุณ</h2>
+            <p>กรอกข้อมูลเบื้องต้นเพื่อยืนยันการจอง</p>
+        </div>
+
+        <form asp-controller="Booking" asp-action="Create" method="post" class="booking-form">
+            <!-- Package Selection -->
+            <div class="booking-section">
+                <h3>เลือกแพคเกจ</h3>
+                <div class="package-selection">
+                    <label for="PackageId" class="form-label">เลือกแพคเกจที่ต้องการ <span class="text-danger">*</span></label>
+                    
+                    @if (ViewBag.Packages != null)
+                    {
+                        <select id="PackageId" name="PackageId" class="form-control package-select" required onchange="updatePackageInfo()">
+                            <option value="">-- กรุณาเลือกแพคเกจ --</option>
+                            @foreach (var item in ViewBag.Packages)
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        </select>
+                    }
+                </div>
+            </div>
+
+            <!-- Guest Information -->
+            <div class="booking-section">
+                <h3>ข้อมูลทั่วไป</h3>
+                
+                <div class="form-group mb-3">
+                    <label for="TotalGuests" class="form-label">จำนวนคน <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control" id="TotalGuests" name="TotalGuests" 
+                           min="2" max="200" required placeholder="เช่น 50">
+                    <small class="form-text text-muted">2-200 คน</small>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="EventDate" class="form-label">วันที่จัดงาน</label>
+                    <input type="date" class="form-control" id="EventDate" name="EventDate">
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="booking-section">
+                <h3>ข้อมูลติดต่อ</h3>
+
+                <div class="form-group mb-3">
+                    <label for="EventLocation" class="form-label">ที่อยู่จัดงาน <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="EventLocation" name="EventLocation" 
+                              rows="3" required placeholder="กรุณากรอกที่อยู่โดยละเอียด">@ViewBag.UserAddress</textarea>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="UserPhone" class="form-label">เบอร์ติดต่อ <span class="text-danger">*</span></label>
+                    <input type="tel" class="form-control" id="UserPhone" name="UserPhone" 
+                           required placeholder="เช่น 08X-XXX-XXXX" value="@ViewBag.UserPhone">
+                </div>
+            </div>
+
+            <!-- Price Summary -->
+            <div class="booking-section price-summary">
+                <h3>สรุปราคา</h3>
+                <div class="price-row">
+                    <span>ราคาแพคเกจ:</span>
+                    <span id="packagePrice">฿ 0</span>
+                </div>
+                <div class="price-row">
+                    <span>จำนวนคน:</span>
+                    <span id="guestCount">0</span>
+                </div>
+                <div class="price-row total">
+                    <span>ราคารวม:</span>
+                    <span id="totalPrice" class="price-highlight">฿ 0</span>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="booking-actions">
+                <a asp-controller="Home" asp-action="Index" class="btn btn-outline">ยกเลิก</a>
+                <button type="submit" class="btn btn-primary">ยืนยันการจอง</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.booking-container {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 20px;
+}
+
+.booking-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(217, 119, 6, 0.2);
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.booking-header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid rgba(217, 119, 6, 0.1);
+}
+
+.booking-header h2 {
+    font-size: 28px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #f5f5f5 0%, #d97706 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+}
+
+.booking-header p {
+    color: #999;
+    font-size: 14px;
+}
+
+.booking-section {
+    margin-bottom: 30px;
+}
+
+.booking-section h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #ddd;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(217, 119, 6, 0.1);
+}
+
+.form-label {
+    color: #ddd;
+    font-weight: 500;
+}
+
+.form-control {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(217, 119, 6, 0.3);
+    color: #f5f5f5;
+    border-radius: 10px;
+    padding: 12px 15px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: #d97706;
+    box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.1);
+    color: #f5f5f5;
+}
+
+.form-control::placeholder {
+    color: #666;
+}
+
+.form-text {
+    color: #999 !important;
+}
+
+.price-summary {
+    background: rgba(217, 119, 6, 0.05);
+    border: 1px solid rgba(217, 119, 6, 0.2);
+    border-radius: 15px;
+    padding: 20px;
+}
+
+.price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    color: #ddd;
+    font-size: 14px;
+}
+
+.price-row.total {
+    border-top: 1px solid rgba(217, 119, 6, 0.2);
+    padding-top: 15px;
+    margin-top: 15px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.price-highlight {
+    color: #d97706;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.booking-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.btn {
+    flex: 1;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #d97706 0%, #f97316 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(217, 119, 6, 0.4);
+}
+
+.btn-outline {
+    background: transparent;
+    border: 2px solid rgba(217, 119, 6, 0.3);
+    color: #ddd;
+}
+
+.btn-outline:hover {
+    background: rgba(217, 119, 6, 0.1);
+    border-color: #d97706;
+    color: #f5f5f5;
+}
+
+.text-danger {
+    color: #ef4444;
+}
+
+@@media (max-width: 768px) {
+    .booking-card {
+        padding: 25px;
+    }
+    
+    .booking-header h2 {
+        font-size: 22px;
+    }
+    
+    .booking-actions {
+        flex-direction: column;
+    }
+}
+</style>
+
+<script>
+function updatePackageInfo() {
+    const packageSelect = document.getElementById('PackageId');
+    const packageId = packageSelect.value;
+    
+    if (!packageId) {
+        resetPriceDisplay();
+        return;
+    }
+
+    // Fetch package info from API
+    fetch(`/Booking/GetPackagePrice?packageId=${packageId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const guests = parseInt(document.getElementById('TotalGuests').value) || 0;
+                const pricePerPerson = data.pricePerPerson;
+                const totalPrice = guests > 0 ? pricePerPerson * guests : 0;
+                
+                document.getElementById('packagePrice').textContent = '฿ ' + pricePerPerson.toLocaleString('th-TH', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+                
+                document.getElementById('guestCount').textContent = guests + ' คน';
+                document.getElementById('totalPrice').textContent = '฿ ' + totalPrice.toLocaleString('th-TH', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+                
+                // Set min guests
+                document.getElementById('TotalGuests').min = data.minGuests;
+            }
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+function updateTotal() {
+    const packageSelect = document.getElementById('PackageId');
+    const packageId = packageSelect.value;
+    const guests = parseInt(document.getElementById('TotalGuests').value) || 0;
+    
+    if (!packageId) {
+        resetPriceDisplay();
+        return;
+    }
+
+    fetch(`/Booking/GetPackagePrice?packageId=${packageId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const pricePerPerson = data.pricePerPerson;
+                const totalPrice = guests > 0 ? pricePerPerson * guests : 0;
+                
+                document.getElementById('guestCount').textContent = guests + ' คน';
+                document.getElementById('totalPrice').textContent = '฿ ' + totalPrice.toLocaleString('th-TH', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+function resetPriceDisplay() {
+    document.getElementById('packagePrice').textContent = '฿ 0.00';
+    document.getElementById('guestCount').textContent = '0 คน';
+    document.getElementById('totalPrice').textContent = '฿ 0.00';
+}
+
+document.getElementById('PackageId').addEventListener('change', updatePackageInfo);
+document.getElementById('TotalGuests').addEventListener('change', updateTotal);
+document.getElementById('TotalGuests').addEventListener('input', updateTotal);
+</script>

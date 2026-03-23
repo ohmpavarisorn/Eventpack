@@ -1,0 +1,330 @@
+@model EventPack.Models.Db.Booking
+
+@{
+    ViewData["Title"] = "ยืนยันการจอง";
+}
+
+<div class="confirmation-container">
+    <div class="confirmation-card success">
+        <div class="success-icon">✓</div>
+        
+        <h2>ยืนยันการจองสำเร็จ!</h2>
+        <p class="success-subtitle">ขอบคุณที่ใช้บริการของเรา</p>
+
+        <div class="booking-details">
+            <div class="detail-section">
+                <h3>รายละเอียดการจอง</h3>
+                
+                <div class="detail-row">
+                    <span class="label">หมายเลขการจอง:</span>
+                    <span class="value booking-id">@Model.BookingId</span>
+                </div>
+
+                <div class="detail-row">
+                    <span class="label">แพคเกจ:</span>
+                    <span class="value">@ViewBag.PackageName</span>
+                </div>
+
+                <div class="detail-row">
+                    <span class="label">จำนวนคน:</span>
+                    <span class="value">@Model.TotalGuests คน</span>
+                </div>
+
+                <div class="detail-row">
+                    <span class="label">วันที่จัดงาน:</span>
+                    <span class="value">
+                        @if (Model.EventDate.HasValue)
+                        {
+                            @Model.EventDate.Value.ToString("dd/MM/yyyy")
+                        }
+                        else
+                        {
+                            <span class="text-muted">ยังไม่ระบุ</span>
+                        }
+                    </span>
+                </div>
+
+                <div class="detail-row">
+                    <span class="label">ที่อยู่จัดงาน:</span>
+                    <span class="value">@Model.EventLocation</span>
+                </div>
+
+                @if (ViewBag.UserInfo != null)
+                {
+                    <div class="detail-row">
+                        <span class="label">เบอร์ติดต่อ:</span>
+                        <span class="value">@ViewBag.UserInfo.UserPhone</span>
+                    </div>
+                }
+
+                <div class="detail-row total">
+                    <span class="label">ราคารวม:</span>
+                    <span class="value price">฿ @Model.TotalPrice?.ToString("N2")</span>
+                </div>
+
+                <div class="detail-row">
+                    <span class="label">สถานะ:</span>
+                    <span class="value status pending">รอการยืนยัน</span>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h4>📌 ข่าวสาร สำคัญ</h4>
+                <ul>
+                    <li>เราจะติดต่อยืนยันการจองของคุณในภายใน 24 ชั่วโมง</li>
+                    <li>ชำระเงินได้เมื่อได้รับการยืนยัน</li>
+                    <li>หากมีคำถามติดต่อเราได้ตามเบอร์ที่ลงทะเบียน</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="confirmation-actions">
+            <a asp-controller="Booking" asp-action="MyBookings" class="btn btn-primary">ดูการจองของฉัน</a>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-outline">กลับหน้าแรก</a>
+        </div>
+    </div>
+</div>
+
+<style>
+.confirmation-container {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 20px;
+}
+
+.confirmation-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(217, 119, 6, 0.2);
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+.confirmation-card.success {
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.success-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(16, 185, 129, 0.2);
+    border: 2px solid #10b981;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    color: #10b981;
+    margin: 0 auto 20px;
+    animation: scaleIn 0.6s ease-out;
+}
+
+@@keyframes scaleIn {
+    from {
+        transform: scale(0);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.confirmation-card h2 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #10b981;
+    margin-bottom: 8px;
+}
+
+.success-subtitle {
+    color: #999;
+    font-size: 16px;
+    margin-bottom: 30px;
+}
+
+.booking-details {
+    text-align: left;
+    margin: 30px 0;
+}
+
+.detail-section {
+    background: rgba(16, 185, 129, 0.05);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+}
+
+.detail-section h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #ddd;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid rgba(16, 185, 129, 0.2);
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(217, 119, 6, 0.1);
+    font-size: 14px;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-row.total {
+    padding-top: 15px;
+    border-top: 2px solid rgba(217, 119, 6, 0.2);
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.detail-row .label {
+    color: #999;
+    font-weight: 500;
+}
+
+.detail-row .value {
+    color: #ddd;
+    text-align: right;
+}
+
+.booking-id {
+    background: rgba(217, 119, 6, 0.2);
+    color: #d97706;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-weight: 600;
+}
+
+.status {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status.pending {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+}
+
+.price {
+    color: #d97706;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.info-box {
+    background: rgba(59, 130, 246, 0.05);
+    border-left: 4px solid #3b82f6;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+    text-align: left;
+}
+
+.info-box h4 {
+    color: #60a5fa;
+    font-size: 14px;
+    margin: 0 0 12px 0;
+}
+
+.info-box ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.info-box li {
+    color: #999;
+    font-size: 13px;
+    padding: 6px 0;
+    padding-left: 20px;
+    position: relative;
+}
+
+.info-box li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: #10b981;
+    font-weight: bold;
+}
+
+.text-muted {
+    color: #666;
+}
+
+.confirmation-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.btn {
+    flex: 1;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #d97706 0%, #f97316 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(217, 119, 6, 0.4);
+}
+
+.btn-outline {
+    background: transparent;
+    border: 2px solid rgba(217, 119, 6, 0.3);
+    color: #ddd;
+}
+
+.btn-outline:hover {
+    background: rgba(217, 119, 6, 0.1);
+    border-color: #d97706;
+    color: #f5f5f5;
+}
+
+@@media (max-width: 768px) {
+    .confirmation-card {
+        padding: 25px;
+    }
+    
+    .detail-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .detail-row .value {
+        text-align: left;
+    }
+    
+    .confirmation-actions {
+        flex-direction: column;
+    }
+}
+</style>

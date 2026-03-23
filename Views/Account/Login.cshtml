@@ -4,38 +4,54 @@
 <div class="login-container">
     <div class="login-card">
         <div class="card-body p-4">
-            <h4 class="text-center mb-4">Login</h4>
+            <h4 class="text-center mb-4">เข้าสู่ระบบ</h4>
 
-            <form asp-controller="Account" asp-action="register" method="post">
+            @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong>❌ เข้าสู่ระบบล้มเหลว</strong><br>
+                    @ViewBag.ErrorMessage
+                    <a asp-controller="Account" asp-action="Register" class="alert-link">คลิกที่นี่เพื่อสมัครสมาชิก</a>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (!string.IsNullOrEmpty(ViewBag.SuccessMessage))
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <strong>✅ เข้าสู่ระบบสำเร็จ!</strong><br>
+                    @ViewBag.SuccessMessage
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (!string.IsNullOrEmpty(ViewBag.Message))
+            {
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    @ViewBag.Message
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <form asp-controller="Account" asp-action="Login" method="post">
                 <div class="mb-3">
-                    <label for="username" class="form-label">Username</label>
-                    <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username" required>
+                    <label for="Name" class="form-label">ชื่อผู้ใช้</label>
+                    <input type="text" class="form-control" id="Name" name="Name" placeholder="กรุณาใส่ชื่อผู้ใช้" required>
                 </div>
 
                 <div class="mb-3">
-                    <label for="password" class="form-label">Password</label>
-                    <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
+                    <label for="Password" class="form-label">รหัสผ่าน</label>
+                    <input type="password" class="form-control" id="Password" name="Password" placeholder="กรุณาใส่รหัสผ่าน" required>
                 </div>
 
                 <div class="d-grid">
                     <button type="submit" class="btn btn-primary btn-lg">
-                        Login
+                        เข้าสู่ระบบ
                     </button>
                 </div>
             </form>
 
-            <div class="footer-text">
-                Don't have an account? <a asp-controller="Account" asp-action="register">Register here</a>
+            <div class="footer-text" style="text-align: center; margin-top: 20px; color: #999;">
+                ยังไม่มีบัญชี? <a asp-controller="Account" asp-action="Register" style="color: #d97706; text-decoration: none; font-weight: 600;">สมัครสมาชิก</a>
             </div>
-
-            @if (!string.IsNullOrEmpty(ViewBag.Name))
-            {
-                <div class="alert alert-info mt-3">@ViewBag.Name</div>
-            }
-            @if (!string.IsNullOrEmpty(ViewBag.Password))
-            {
-                <div class="alert alert-info mt-3">@ViewBag.Password</div>
-            }
         </div>
     </div>
 </div>

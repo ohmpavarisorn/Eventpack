@@ -14,9 +14,9 @@ public class HomeController : Controller
     }
     public IActionResult Index()
     {
-        var user = (from u in _Db.Userinformations select u).ToList();
+        var packages = (from p in _Db.Foodpackages select p).ToList();
                    
-        return View(user);
+        return View(packages);
     }
    
     public IActionResult Privacy()

@@ -20,4 +20,8 @@ public partial class Booking
     public decimal? TotalPrice { get; set; }
 
     public string? BookingStatus { get; set; }
+
+    // Navigation properties
+    public virtual Foodpackage? PackageIdNavigation { get; set; }
+    public virtual Userinformation? UserIdNavigation { get; set; }
 }
