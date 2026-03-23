@@ -3,28 +3,127 @@
     
 }
 @using EventPack.Models.Db;
-@model IEnumerable<EventPack.Models.Db.Userinformation>
 
-<h2>User List</h2>
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="hero-content">
+        <h1 class="hero-title">Welcome to EventPack!</h1>
+        <p class="hero-subtitle">Your one-stop solution for event management</p>
+        <p class="hero-description">Choose the perfect package for your event and let us handle the rest</p>
+    </div>
+</div>
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>UserID</th>
-            <th>Phone</th>
-            <th>Full Name</th>
-            <th>Address</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var user in Model)
-        {
-            <tr>
-                <td>@user.UserId</td>
-                <td>@user.UserPhone</td>
-                <td>@user.FullName</td>
-                <td>@user.UserAddress</td>
-            </tr>
-        }
-    </tbody>
-</table>
+<!-- Packages Section -->
+<div class="packages-container">
+    <div class="section-header">
+        <h2 class="section-title">Our Packages</h2>
+        <p class="section-description">Select a package that fits your event size</p>
+    </div>
+
+    <div class="packages-grid">
+        <!-- Mini Pack -->
+        <div class="package-card mini-pack">
+            <div class="package-header">
+                <h3 class="package-name">Mini Pack</h3>
+                <span class="package-size">2-6 People</span>
+            </div>
+            <div class="package-icon">🎉</div>
+            <div class="package-details">
+                <p class="package-description">Perfect for intimate family gatherings and small celebrations</p>
+                <ul class="package-features">
+                    <li>✓ Small venue setup</li>
+                    <li>✓ Basic decorations</li>
+                    <li>✓ Simple catering</li>
+                    <li>✓ Basic sound system</li>
+                </ul>
+            </div>
+            <div class="package-footer">
+                <div class="package-price">Starting from</div>
+                <div class="price">฿ 5,000</div>
+                <a asp-controller="Booking" asp-action="Create" class="btn-book">Book Now</a>
+            </div>
+        </div>
+
+        <!-- M Size -->
+        <div class="package-card medium-pack">
+            <div class="package-header">
+                <h3 class="package-name">M Size</h3>
+                <span class="package-size">10-25 People</span>
+            </div>
+            <div class="package-icon">🎊</div>
+            <div class="package-details">
+                <p class="package-description">Ideal for office parties and medium-sized celebrations</p>
+                <ul class="package-features">
+                    <li>✓ Medium venue</li>
+                    <li>✓ Full decorations</li>
+                    <li>✓ Buffet catering</li>
+                    <li>✓ Professional sound & lighting</li>
+                    <li>✓ Photography service</li>
+                </ul>
+            </div>
+            <div class="package-footer">
+                <div class="package-price">Starting from</div>
+                <div class="price">฿ 15,000</div>
+                <a asp-controller="Booking" asp-action="Create" class="btn-book">Book Now</a>
+            </div>
+        </div>
+
+        <!-- L Size -->
+        <div class="package-card large-pack">
+            <div class="package-header">
+                <h3 class="package-name">L Size</h3>
+                <span class="package-size">30-50 People</span>
+            </div>
+            <div class="package-icon">🎈</div>
+            <div class="package-details">
+                <p class="package-description">Great for weddings and large corporate events</p>
+                <ul class="package-features">
+                    <li>✓ Large venue rental</li>
+                    <li>✓ Premium decorations</li>
+                    <li>✓ Full catering service</li>
+                    <li>✓ Professional entertainment</li>
+                    <li>✓ HD photography & videography</li>
+                    <li>✓ Event coordinator</li>
+                </ul>
+            </div>
+            <div class="package-footer">
+                <div class="package-price">Starting from</div>
+                <div class="price">฿ 40,000</div>
+                <a asp-controller="Booking" asp-action="Create" class="btn-book">Book Now</a>
+            </div>
+        </div>
+
+        <!-- XL Size -->
+        <div class="package-card xlarge-pack">
+            <div class="package-header">
+                <h3 class="package-name">XL Size</h3>
+                <span class="package-size">50+ People</span>
+            </div>
+            <div class="package-icon">✨</div>
+            <div class="package-details">
+                <p class="package-description">Premium package for grand celebrations and major events</p>
+                <ul class="package-features">
+                    <li>✓ Grand venue with setup</li>
+                    <li>✓ Luxury decorations</li>
+                    <li>✓ Premium catering menu</li>
+                    <li>✓ Live entertainment & DJ</li>
+                    <li>✓ Professional 4K videography</li>
+                    <li>✓ Dedicated event coordinator</li>
+                    <li>✓ VIP guest accommodation</li>
+                </ul>
+            </div>
+            <div class="package-footer">
+                <div class="package-price">Starting from</div>
+                <div class="price">฿ 80,000</div>
+                <a asp-controller="Booking" asp-action="Create" class="btn-book">Book Now</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CTA Section -->
+<div class="cta-section">
+    <h2>Need a Custom Package?</h2>
+    <p>Contact us for personalized event solutions</p>
+    <a asp-controller="Home" asp-action="Contact" class="btn-cta">Get in Touch</a>
+</div>

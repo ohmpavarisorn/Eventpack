@@ -1,34 +1,41 @@
 @using EventPack.ViewModels
 @model LabUserViewModels
-<div class="container">
-    <form asp-controller="Account" asp-action="register">
 
-        <div class="row align-items-center mb-3">
-            <div class="col-auto">
-                <label class="col-form-label">Username</label>
-            </div>
-            <div class="col">
-                <input type="text" class="form-control" name="username">
-            </div>
-        </div>
+<div class="login-container">
+    <div class="login-card">
+        <div class="card-body p-4">
+            <h4 class="text-center mb-4">Login</h4>
 
-        <div class="row align-items-center mb-3">
-            <div class="col-auto">
-                <label class="col-form-label">Password</label>
-            </div>
-            <div class="col">
-                <input type="password" class="form-control" name="password">
-            </div>
-        </div>
-        
-        <div class="text-end">
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </div>
-    </form>
-    @ViewBag.Name <br />
-    @ViewBag.Password <br />    
-    @ViewBag.Phone <br />
-    @ViewBag.Address <br />
-    @ViewBag.ConfirmPassword <br />
+            <form asp-controller="Account" asp-action="register" method="post">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username" required>
+                </div>
 
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        Login
+                    </button>
+                </div>
+            </form>
+
+            <div class="footer-text">
+                Don't have an account? <a asp-controller="Account" asp-action="register">Register here</a>
+            </div>
+
+            @if (!string.IsNullOrEmpty(ViewBag.Name))
+            {
+                <div class="alert alert-info mt-3">@ViewBag.Name</div>
+            }
+            @if (!string.IsNullOrEmpty(ViewBag.Password))
+            {
+                <div class="alert alert-info mt-3">@ViewBag.Password</div>
+            }
+        </div>
+    </div>
 </div>
