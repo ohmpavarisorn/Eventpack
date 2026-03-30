@@ -62,7 +62,9 @@ public class AccountController : Controller
         Db.Userinformations.Add(user);
         Db.SaveChanges();
 
-        return RedirectToAction("userController", "Admin");
+        // แสดงข้อความ success และ redirect ไป Login
+        TempData["SuccessMessage"] = "Create account success";
+        return RedirectToAction("Login");
     }
 
     // หน้า Login

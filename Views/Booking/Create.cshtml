@@ -30,17 +30,15 @@
                                                         <span class="item-name">@item.ItemName</span>
                                                         <span class="item-price">฿ @item.BasePrice.ToString("N2")</span>
                                                     </div>
-                                                    <div class="item-quantity">
-                                                        <button type="button" class="qty-btn qty-minus" onclick="decreaseQty('@item.MenuItemId')">−</button>
-                                                        <input type="number" 
-                                                               name="menu_qty_@item.MenuItemId" 
-                                                               id="qty_@item.MenuItemId" 
-                                                               value="0" 
-                                                               min="0" 
-                                                               class="qty-input" 
+                                                    <div class="item-checkbox">
+                                                        <input type="checkbox" 
+                                                               id="menu_@item.MenuItemId" 
+                                                               name="menu_@item.MenuItemId"
+                                                               value="@item.MenuItemId"
+                                                               class="menu-checkbox" 
                                                                onchange="updateTotalPrice()"
                                                                data-price="@item.BasePrice">
-                                                        <button type="button" class="qty-btn qty-plus" onclick="increaseQty('@item.MenuItemId')">+</button>
+                                                        <label for="menu_@item.MenuItemId" class="checkbox-label">เลือก</label>
                                                     </div>
                                                 </div>
                                             }
@@ -94,6 +92,10 @@
                         <div class="price-row">
                             <span>ราคาเมนูอาหาร:</span>
                             <span id="menuPrice">฿ 0</span>
+                        </div>
+                        <div class="price-row">
+                            <span>ค่าดำเนินการ:</span>
+                            <span id="operationFee">฿ 0</span>
                         </div>
                         <div class="price-row">
                             <span>จำนวนคน:</span>
@@ -277,6 +279,38 @@
     padding: 4px;
     border-radius: 3px;
     flex-shrink: 0;
+}
+
+.item-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.menu-checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #ffc107;
+}
+
+.checkbox-label {
+    cursor: pointer;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 4px 8px;
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    border-radius: 3px;
+    transition: all 0.2s;
+}
+
+.menu-checkbox:checked + .checkbox-label {
+    background: #ffc107;
+    color: #000;
+    border-color: #ffc107;
 }
 
 .qty-btn {
@@ -486,7 +520,7 @@
         flex-wrap: wrap;
     }
 
-    .item-quantity {
+    .item-checkbox {
         align-self: flex-end;
         margin-top: 8px;
         width: 100%;
@@ -504,36 +538,38 @@
 </style>
 
 <script>
-function increaseQty(menuItemId) {
-    const input = document.getElementById(`qty_${menuItemId}`);
-    input.value = parseInt(input.value) + 1;
-    updateTotalPrice();
-}
-
-function decreaseQty(menuItemId) {
-    const input = document.getElementById(`qty_${menuItemId}`);
-    const currentValue = parseInt(input.value);
-    if (currentValue > 0) {
-        input.value = currentValue - 1;
-        updateTotalPrice();
-    }
+// Calculate operation fee based on guest count
+function getOperationFee(guestCount) {
+    if (guestCount >= 2 && guestCount <= 10) return 5000;
+    if (guestCount >= 11 && guestCount <= 20) return 9000;
+    if (guestCount >= 21 && guestCount <= 35) return 12000;
+    if (guestCount >= 36 && guestCount <= 50) return 15000;
+    if (guestCount >= 60 && guestCount <= 80) return 25000;
+    if (guestCount >= 81) return 40000;
+    return 0;
 }
 
 function updateTotalPrice() {
-    let menuPrice = 0;
-    const quantityInputs = document.querySelectorAll('.qty-input');
+    // Get sum of selected menu items prices
+    let pricePerPerson = 0;
+    const checkboxes = document.querySelectorAll('.menu-checkbox:checked');
     
-    quantityInputs.forEach(input => {
-        const qty = parseInt(input.value) || 0;
-        const price = parseFloat(input.dataset.price) || 0;
-        menuPrice += qty * price;
+    checkboxes.forEach(checkbox => {
+        const price = parseFloat(checkbox.dataset.price) || 0;
+        pricePerPerson += price;
     });
 
     const guestCount = parseInt(document.getElementById('TotalGuests').value) || 0;
+    const operationFee = getOperationFee(guestCount);
+    
+    // Menu price = price per person × number of guests
+    const menuPrice = pricePerPerson * guestCount;
+    const totalPrice = menuPrice + operationFee;
 
     document.getElementById('menuPrice').textContent = `฿ ${menuPrice.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    document.getElementById('operationFee').textContent = `฿ ${operationFee.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     document.getElementById('guestCount').textContent = guestCount;
-    document.getElementById('totalPrice').textContent = `฿ ${menuPrice.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    document.getElementById('totalPrice').textContent = `฿ ${totalPrice.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 // Initialize on page load
@@ -543,8 +579,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Form validation
 document.getElementById('bookingForm').addEventListener('submit', function(e) {
-    const selectedItems = Array.from(document.querySelectorAll('.qty-input'))
-        .filter(input => parseInt(input.value) > 0);
+    const selectedItems = Array.from(document.querySelectorAll('.menu-checkbox:checked'));
     
     if (selectedItems.length === 0) {
         e.preventDefault();

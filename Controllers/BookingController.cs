@@ -60,24 +60,21 @@ namespace EventPack.Controllers
                     return RedirectToAction("Login", "Account");
                 }
 
-                // Get selected menu items from form
-                var selectedMenuItems = new Dictionary<string, int>();
+                // Get selected menu items from checkboxes
+                var selectedMenuIds = new List<string>();
                 var formKeys = HttpContext.Request.Form.Keys;
                 
                 foreach (var key in formKeys)
                 {
-                    if (key.StartsWith("menu_qty_"))
+                    if (key.StartsWith("menu_") && !key.StartsWith("menu_qty_"))
                     {
-                        var menuItemId = key.Replace("menu_qty_", "");
-                        if (int.TryParse(HttpContext.Request.Form[key], out int quantity) && quantity > 0)
-                        {
-                            selectedMenuItems[menuItemId] = quantity;
-                        }
+                        var menuItemId = key.Replace("menu_", "");
+                        selectedMenuIds.Add(menuItemId);
                     }
                 }
 
                 // Validate that at least one menu item is selected
-                if (selectedMenuItems.Count == 0)
+                if (selectedMenuIds.Count == 0)
                 {
                     ModelState.AddModelError("", "กรุณาเลือกเมนูอาหารอย่างน้อยหนึ่งรายการ");
                     var menuItems = await _context.MenuItems
@@ -98,16 +95,21 @@ namespace EventPack.Controllers
                     return View(model);
                 }
 
-                // Calculate total price
-                decimal totalPrice = 0;
-                foreach (var item in selectedMenuItems)
+                // Calculate price per person from selected items
+                decimal pricePerPerson = 0;
+                foreach (var menuItemId in selectedMenuIds)
                 {
-                    var menuItem = await _context.MenuItems.FindAsync(item.Key);
+                    var menuItem = await _context.MenuItems.FindAsync(menuItemId);
                     if (menuItem != null)
                     {
-                        totalPrice += menuItem.BasePrice * item.Value;
+                        pricePerPerson += menuItem.BasePrice;
                     }
                 }
+
+                // Calculate total price: (price per person × guests) + operation fee
+                decimal totalMenuPrice = pricePerPerson * model.TotalGuests;
+                decimal operationFee = GetOperationFee(model.TotalGuests);
+                decimal totalPrice = totalMenuPrice + operationFee;
 
                 // Update user info if provided
                 var userInfo = await _context.Userinformations.FirstOrDefaultAsync(u => u.UserId == userId);
@@ -135,19 +137,19 @@ namespace EventPack.Controllers
                 _context.Bookings.Add(booking);
                 await _context.SaveChangesAsync();
 
-                // Create BookingMenuItem records
-                foreach (var item in selectedMenuItems)
+                // Create BookingMenuItem records (quantity = 1 per person for all guests)
+                foreach (var menuItemId in selectedMenuIds)
                 {
-                    var menuItem = await _context.MenuItems.FindAsync(item.Key);
+                    var menuItem = await _context.MenuItems.FindAsync(menuItemId);
                     if (menuItem != null)
                     {
                         var bookingMenuItem = new BookingMenuItem
                         {
                             BookingId = booking.BookingId,
-                            MenuItemId = item.Key,
-                            Quantity = item.Value,
+                            MenuItemId = menuItemId,
+                            Quantity = model.TotalGuests,  // Quantity = number of guests
                             UnitPrice = menuItem.BasePrice,
-                            TotalPrice = menuItem.BasePrice * item.Value
+                            TotalPrice = menuItem.BasePrice * model.TotalGuests
                         };
                         _context.BookingMenuItems.Add(bookingMenuItem);
                     }
@@ -254,6 +256,21 @@ namespace EventPack.Controllers
                 success = true,
                 totalPrice = totalPrice
             });
+        }
+
+        // Helper method to calculate operation fee based on guest count
+        private decimal GetOperationFee(int guestCount)
+        {
+            return guestCount switch
+            {
+                >= 2 and <= 10 => 5000,
+                >= 11 and <= 20 => 9000,
+                >= 21 and <= 35 => 12000,
+                >= 36 and <= 50 => 18000,
+                >= 60 and <= 80 => 35000,
+                >= 81 => 50000,
+                _ => 0
+            };
         }
     }
 }
