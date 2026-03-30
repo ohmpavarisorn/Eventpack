@@ -15,8 +15,8 @@
         <div class="empty-state">
             <div class="empty-icon">📦</div>
             <h3>ยังไม่มีการจอง</h3>
-            <p>คุณยังไม่ได้ทำการจองแพคเกจใด ๆ</p>
-            <a asp-controller="Booking" asp-action="Create" class="btn btn-primary">จองแพคเกจ</a>
+            <p>คุณยังไม่ได้ทำการจองเมนูอาหารใด ๆ</p>
+            <a asp-controller="Booking" asp-action="Create" class="btn btn-primary">จองเลยตอนนี้</a>
         </div>
     }
     else
@@ -27,7 +27,7 @@
                 <div class="booking-card@(booking.BookingStatus == "confirmed" ? " confirmed" : booking.BookingStatus == "cancelled" ? " cancelled" : " pending")">
                     <div class="booking-card-header">
                         <div>
-                            <h3>@booking.PackageId</h3>
+                            <h3>เมนูที่ออกแบบเอง</h3>
                             <span class="booking-id">@booking.BookingId</span>
                         </div>
                         <div class="status-badge @booking.BookingStatus">
@@ -66,6 +66,23 @@
                                 <span class="value price">฿ @booking.TotalPrice?.ToString("N2")</span>
                             </div>
                         </div>
+
+                        @* Menu Items Section *@
+                        @if (booking.BookingMenuItems != null && booking.BookingMenuItems.Any())
+                        {
+                            <div class="menu-items-section">
+                                <h4>🍽️ เมนูอาหารที่เลือก:</h4>
+                                <div class="menu-items-compact">
+                                    @foreach (var item in booking.BookingMenuItems)
+                                    {
+                                        <span class="menu-item-badge">
+                                            @item.MenuItem?.ItemName 
+                                            <span class="qty">×@item.Quantity</span>
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                        }
                     </div>
 
                     <div class="booking-card-footer">
@@ -254,6 +271,44 @@
 
 .text-muted {
     color: #666;
+}
+
+.menu-items-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 193, 7, 0.2);
+}
+
+.menu-items-section h4 {
+    color: #ffc107;
+    font-size: 13px;
+    text-transform: uppercase;
+    margin: 0 0 10px 0;
+    font-weight: 600;
+}
+
+.menu-items-compact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.menu-item-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+    padding: 5px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    border: 1px solid rgba(255, 193, 7, 0.2);
+    white-space: nowrap;
+}
+
+.menu-item-badge .qty {
+    color: #999;
+    font-weight: 600;
 }
 
 .booking-card-footer {

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace EventPack.Models.Db;
 
-public partial class labstudent
+public partial class LabStudent
 {
     public string StdID { get; set; } = null!;
 

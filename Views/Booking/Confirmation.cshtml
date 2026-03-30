@@ -21,11 +21,6 @@
                 </div>
 
                 <div class="detail-row">
-                    <span class="label">แพคเกจ:</span>
-                    <span class="value">@ViewBag.PackageName</span>
-                </div>
-
-                <div class="detail-row">
                     <span class="label">จำนวนคน:</span>
                     <span class="value">@Model.TotalGuests คน</span>
                 </div>
@@ -56,16 +51,44 @@
                         <span class="value">@ViewBag.UserInfo.UserPhone</span>
                     </div>
                 }
+            </div>
 
+            <!-- Menu Items Section -->
+            @if (Model.BookingMenuItems != null && Model.BookingMenuItems.Any())
+            {
+                <div class="menu-details-section">
+                    <h3>🍽️ เมนูอาหารที่เลือก</h3>
+                    <div class="menu-items-list">
+                        @foreach (var item in Model.BookingMenuItems)
+                        {
+                            <div class="menu-item-row">
+                                <div class="item-name">
+                                    <strong>@item.MenuItem?.ItemName</strong>
+                                    <span class="item-category">(@item.MenuItem?.Category)</span>
+                                </div>
+                                <div class="item-details">
+                                    <span class="quantity">จำนวน: @item.Quantity</span>
+                                    <span class="separator">×</span>
+                                    <span class="unit-price">฿ @item.UnitPrice.ToString("N2")</span>
+                                    <span class="separator">=</span>
+                                    <span class="total-price">฿ @item.TotalPrice.ToString("N2")</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <div class="price-summary-section">
                 <div class="detail-row total">
                     <span class="label">ราคารวม:</span>
                     <span class="value price">฿ @Model.TotalPrice?.ToString("N2")</span>
                 </div>
+            </div>
 
-                <div class="detail-row">
-                    <span class="label">สถานะ:</span>
-                    <span class="value status pending">รอการยืนยัน</span>
-                </div>
+            <div class="detail-row">
+                <span class="label">สถานะ:</span>
+                <span class="value status pending">รอการยืนยัน</span>
             </div>
 
             <div class="info-box">
@@ -87,7 +110,7 @@
 
 <style>
 .confirmation-container {
-    max-width: 600px;
+    max-width: 700px;
     margin: 40px auto;
     padding: 20px;
 }
@@ -180,8 +203,9 @@
 }
 
 .detail-row.total {
-    padding-top: 15px;
+    padding: 15px 0;
     border-top: 2px solid rgba(217, 119, 6, 0.2);
+    border-bottom: none;
     font-weight: 600;
     font-size: 16px;
 }
@@ -222,6 +246,93 @@
     color: #d97706;
     font-size: 18px;
     font-weight: 700;
+}
+
+/* Menu Details Styles */
+.menu-details-section {
+    background: rgba(255, 193, 7, 0.05);
+    border: 1px solid rgba(255, 193, 7, 0.2);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+}
+
+.menu-details-section h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #ffc107;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid rgba(255, 193, 7, 0.2);
+}
+
+.menu-items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.menu-item-row {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 12px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 15px;
+    border-left: 3px solid #ffc107;
+}
+
+.item-name {
+    flex: 1;
+    color: #fff;
+    font-size: 14px;
+}
+
+.item-name strong {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.item-category {
+    color: #ffc107;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.item-details {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    font-size: 13px;
+    color: #ddd;
+}
+
+.separator {
+    color: #666;
+}
+
+.unit-price {
+    color: #ffc107;
+    font-weight: 600;
+}
+
+.total-price {
+    color: #10b981;
+    font-weight: 700;
+}
+
+.quantity {
+    color: #999;
+}
+
+.price-summary-section {
+    background: linear-gradient(135deg, rgba(217, 119, 6, 0.15), rgba(217, 119, 6, 0.05));
+    border: 1px solid rgba(217, 119, 6, 0.3);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
 }
 
 .info-box {
@@ -298,33 +409,47 @@
 
 .btn-outline {
     background: transparent;
-    border: 2px solid rgba(217, 119, 6, 0.3);
-    color: #ddd;
+    color: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .btn-outline:hover {
-    background: rgba(217, 119, 6, 0.1);
-    border-color: #d97706;
-    color: #f5f5f5;
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: #fff;
 }
 
-@@media (max-width: 768px) {
+@@media (max-width: 600px) {
+    .confirmation-container {
+        margin: 20px auto;
+        padding: 10px;
+    }
+
     .confirmation-card {
         padding: 25px;
     }
-    
-    .detail-row {
+
+    .booking-details {
+        margin: 20px 0;
+    }
+
+    .menu-item-row {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 5px;
+        gap: 8px;
     }
-    
-    .detail-row .value {
-        text-align: left;
+
+    .item-details {
+        width: 100%;
+        flex-wrap: wrap;
     }
-    
+
     .confirmation-actions {
         flex-direction: column;
+    }
+
+    .btn {
+        padding: 10px 15px;
+        font-size: 14px;
     }
 }
 </style>

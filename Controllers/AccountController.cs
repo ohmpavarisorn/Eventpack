@@ -128,7 +128,7 @@ public class AccountController : Controller
     [HttpPost]
     public IActionResult Lab9(Lab9ViewModel data)
     {   
-        var u = new labstudent();
+        var u = new LabStudent();
         u.StdID = data.UserID ?? "";
         u.StdPASSWORD = data.Password ?? "";
         u.StdName = data.Name ?? "";
