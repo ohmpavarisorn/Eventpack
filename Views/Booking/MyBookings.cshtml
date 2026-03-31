@@ -68,18 +68,37 @@
                         </div>
 
                         @* Menu Items Section *@
-                        @if (booking.BookingMenuItems != null && booking.BookingMenuItems.Any())
+                        @{
+                            System.Text.Json.JsonElement? menuData = null;
+                            if (!string.IsNullOrEmpty(booking.MenuItemsJson))
+                            {
+                                try
+                                {
+                                    var jsonDoc = System.Text.Json.JsonDocument.Parse(booking.MenuItemsJson);
+                                    menuData = jsonDoc.RootElement;
+                                }
+                                catch { }
+                            }
+                        }
+                        
+                        @if (menuData.HasValue)
                         {
                             <div class="menu-items-section">
                                 <h4>🍽️ เมนูอาหารที่เลือก:</h4>
                                 <div class="menu-items-compact">
-                                    @foreach (var item in booking.BookingMenuItems)
+                                    @try
                                     {
-                                        <span class="menu-item-badge">
-                                            @item.MenuItem?.ItemName 
-                                            <span class="qty">×@item.Quantity</span>
-                                        </span>
+                                        if (menuData.Value.TryGetProperty("items", out var itemsArray))
+                                        {
+                                            @foreach (var itemId in itemsArray.EnumerateArray())
+                                            {
+                                                <span class="menu-item-badge">
+                                                    @itemId.GetString()
+                                                </span>
+                                            }
+                                        }
                                     }
+                                    catch { }
                                 </div>
                             </div>
                         }

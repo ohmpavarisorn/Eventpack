@@ -30,10 +30,6 @@ public partial class Csi402projectContext : DbContext
 
     public virtual DbSet<Staff> Staffs { get; set; }
 
-    public virtual DbSet<StaffAssignment> StaffAssignments { get; set; }
-
-    public virtual DbSet<BookingMenuItem> BookingMenuItems { get; set; }
-
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -72,6 +68,21 @@ public partial class Csi402projectContext : DbContext
                 .HasColumnName("UserID")
                 .UseCollation("utf8mb3_general_ci")
                 .HasCharSet("utf8mb3");
+            entity.Property(e => e.MenuItemsJson)
+                .HasColumnType("longtext")
+                .UseCollation("utf8mb3_general_ci")
+                .HasCharSet("utf8mb3");
+
+            // Foreign key relationships
+            entity.HasOne(e => e.PackageIdNavigation)
+                .WithMany()
+                .HasForeignKey(e => e.PackageId)
+                .IsRequired(false);
+
+            entity.HasOne(e => e.UserIdNavigation)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .IsRequired(false);
         });
 
         modelBuilder.Entity<Foodpackage>(entity =>
@@ -201,64 +212,6 @@ public partial class Csi402projectContext : DbContext
             entity.Property(e => e.Phone).HasMaxLength(15);
         });
 
-        // StaffAssignment configuration
-        modelBuilder.Entity<StaffAssignment>(entity =>
-        {
-            entity.HasKey(e => e.AssignmentId).HasName("PRIMARY");
-            entity.ToTable("staffassignments");
-
-            entity.Property(e => e.AssignmentId)
-                .HasColumnName("AssignmentID");
-            entity.Property(e => e.BookingId)
-                .HasMaxLength(10)
-                .HasColumnName("BookingID")
-                .UseCollation("utf8mb3_general_ci")
-                .HasCharSet("utf8mb3");
-            entity.Property(e => e.StaffId)
-                .HasMaxLength(10)
-                .HasColumnName("StaffID")
-                .UseCollation("utf8mb3_general_ci")
-                .HasCharSet("utf8mb3");
-            entity.Property(e => e.AssignmentDate).HasColumnType("datetime");
-
-            entity.HasOne(e => e.Booking)
-                .WithMany(b => b.StaffAssignments)
-                .HasForeignKey(e => e.BookingId);
-
-            entity.HasOne(e => e.Staff)
-                .WithMany(s => s.StaffAssignments)
-                .HasForeignKey(e => e.StaffId);
-        });
-
-        // BookingMenuItem configuration
-        modelBuilder.Entity<BookingMenuItem>(entity =>
-        {
-            entity.HasKey(e => e.BookingMenuItemId).HasName("PRIMARY");
-            entity.ToTable("bookingmenuitems");
-
-            entity.Property(e => e.BookingMenuItemId)
-                .HasColumnName("BookingMenuItemID");
-            entity.Property(e => e.BookingId)
-                .HasMaxLength(10)
-                .HasColumnName("BookingID")
-                .UseCollation("utf8mb3_general_ci")
-                .HasCharSet("utf8mb3");
-            entity.Property(e => e.MenuItemId)
-                .HasMaxLength(10)
-                .HasColumnName("MenuItemID")
-                .UseCollation("utf8mb3_general_ci")
-                .HasCharSet("utf8mb3");
-            entity.Property(e => e.UnitPrice).HasPrecision(10, 2);
-            entity.Property(e => e.TotalPrice).HasPrecision(10, 2);
-
-            entity.HasOne(e => e.Booking)
-                .WithMany(b => b.BookingMenuItems)
-                .HasForeignKey(e => e.BookingId);
-
-            entity.HasOne(e => e.MenuItem)
-                .WithMany(m => m.BookingMenuItems)
-                .HasForeignKey(e => e.MenuItemId);
-        });
 
         OnModelCreatingPartial(modelBuilder);
     }

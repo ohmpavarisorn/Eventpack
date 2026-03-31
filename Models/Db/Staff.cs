@@ -12,7 +12,4 @@ public partial class Staff
     public string Role { get; set; } = null!; // 'Chef', 'Sous Chef', 'Staff'
 
     public string? Phone { get; set; }
-
-    // Navigation properties
-    public virtual ICollection<StaffAssignment> StaffAssignments { get; set; } = new List<StaffAssignment>();
 }

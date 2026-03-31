@@ -12,7 +12,4 @@ public partial class MenuItem
     public string Category { get; set; } = null!; // 'Appetizer', 'Main', 'Side', 'Dessert'
 
     public decimal BasePrice { get; set; }
-
-    // Navigation properties
-    public virtual ICollection<BookingMenuItem> BookingMenuItems { get; set; } = new List<BookingMenuItem>();
 }

@@ -2,6 +2,18 @@
 
 @{
     ViewData["Title"] = "ยืนยันการจอง";
+    
+    // Parse menu items JSON
+    System.Text.Json.JsonElement? menuData = null;
+    if (!string.IsNullOrEmpty(Model.MenuItemsJson))
+    {
+        try
+        {
+            var jsonDoc = System.Text.Json.JsonDocument.Parse(Model.MenuItemsJson);
+            menuData = jsonDoc.RootElement;
+        }
+        catch { }
+    }
 }
 
 <div class="confirmation-container">
@@ -54,27 +66,34 @@
             </div>
 
             <!-- Menu Items Section -->
-            @if (Model.BookingMenuItems != null && Model.BookingMenuItems.Any())
+            @if (menuData.HasValue)
             {
                 <div class="menu-details-section">
                     <h3>🍽️ เมนูอาหารที่เลือก</h3>
                     <div class="menu-items-list">
-                        @foreach (var item in Model.BookingMenuItems)
+                        @try
                         {
-                            <div class="menu-item-row">
-                                <div class="item-name">
-                                    <strong>@item.MenuItem?.ItemName</strong>
-                                    <span class="item-category">(@item.MenuItem?.Category)</span>
+                            if (menuData.Value.TryGetProperty("items", out var itemsArray))
+                            {
+                                @foreach (var itemId in itemsArray.EnumerateArray())
+                                {
+                                    <div class="menu-item-row">
+                                        <div class="item-name">
+                                            <strong>@itemId.GetString()</strong>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            
+                            if (menuData.Value.TryGetProperty("pricePerPerson", out var pricePerPerson))
+                            {
+                                <div class="menu-item-row">
+                                    <div class="item-name">ราคาต่อคน</div>
+                                    <div class="item-price">฿ @pricePerPerson.GetDecimal().ToString("N2")</div>
                                 </div>
-                                <div class="item-details">
-                                    <span class="quantity">จำนวน: @item.Quantity</span>
-                                    <span class="separator">×</span>
-                                    <span class="unit-price">฿ @item.UnitPrice.ToString("N2")</span>
-                                    <span class="separator">=</span>
-                                    <span class="total-price">฿ @item.TotalPrice.ToString("N2")</span>
-                                </div>
-                            </div>
+                            }
                         }
+                        catch { }
                     </div>
                 </div>
             }

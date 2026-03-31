@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using EventPack.Models.Db;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,6 +48,19 @@ using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<Csi402projectContext>();
     context.Database.EnsureCreated();
+    
+    // Add MenuItemsJson column if it doesn't exist
+    try
+    {
+        context.Database.ExecuteSqlRaw(@"
+            ALTER TABLE bookings 
+            ADD COLUMN MenuItemsJson longtext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL
+        ");
+    }
+    catch
+    {
+        // Column likely already exists, ignore error
+    }
     
     // Seed Foodpackages if empty
     if (!context.Foodpackages.Any())

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Text.Json;
 using EventPack.ViewModels;
 namespace EventPack.Controllers
 {
@@ -21,10 +22,19 @@ namespace EventPack.Controllers
         // GET: Booking/Create
         public async Task<IActionResult> Create()
         {
-            // Get menu items grouped by category
-            var menuItems = await _context.MenuItems
-                .GroupBy(m => m.Category)
-                .ToDictionaryAsync(g => g.Key, g => g.ToList());
+            // Try to get menu items from database, if table doesn't exist return empty
+            Dictionary<string, List<MenuItem>>? menuItems = null;
+            try
+            {
+                menuItems = await _context.MenuItems
+                    .GroupBy(m => m.Category)
+                    .ToDictionaryAsync(g => g.Key, g => g.ToList());
+            }
+            catch
+            {
+                // MenuItems table doesn't exist yet, use empty
+                menuItems = new Dictionary<string, List<MenuItem>>();
+            }
             
             ViewBag.MenuItemsByCategory = menuItems;
 
@@ -77,9 +87,14 @@ namespace EventPack.Controllers
                 if (selectedMenuIds.Count == 0)
                 {
                     ModelState.AddModelError("", "กรุณาเลือกเมนูอาหารอย่างน้อยหนึ่งรายการ");
-                    var menuItems = await _context.MenuItems
-                        .GroupBy(m => m.Category)
-                        .ToDictionaryAsync(g => g.Key, g => g.ToList());
+                    Dictionary<string, List<MenuItem>>? menuItems = null;
+                    try
+                    {
+                        menuItems = await _context.MenuItems
+                            .GroupBy(m => m.Category)
+                            .ToDictionaryAsync(g => g.Key, g => g.ToList());
+                    }
+                    catch { menuItems = new Dictionary<string, List<MenuItem>>(); }
                     ViewBag.MenuItemsByCategory = menuItems;
                     return View(model);
                 }
@@ -88,22 +103,38 @@ namespace EventPack.Controllers
                 if (model.TotalGuests < 2)
                 {
                     ModelState.AddModelError("TotalGuests", "จำนวนคนต้องมากกว่า 1 คน");
-                    var menuItems = await _context.MenuItems
-                        .GroupBy(m => m.Category)
-                        .ToDictionaryAsync(g => g.Key, g => g.ToList());
+                    Dictionary<string, List<MenuItem>>? menuItems = null;
+                    try
+                    {
+                        menuItems = await _context.MenuItems
+                            .GroupBy(m => m.Category)
+                            .ToDictionaryAsync(g => g.Key, g => g.ToList());
+                    }
+                    catch { menuItems = new Dictionary<string, List<MenuItem>>(); }
                     ViewBag.MenuItemsByCategory = menuItems;
                     return View(model);
                 }
 
                 // Calculate price per person from selected items
                 decimal pricePerPerson = 0;
-                foreach (var menuItemId in selectedMenuIds)
+                var menuItemDetails = new Dictionary<string, decimal>();
+                
+                try
                 {
-                    var menuItem = await _context.MenuItems.FindAsync(menuItemId);
-                    if (menuItem != null)
+                    foreach (var menuItemId in selectedMenuIds)
                     {
-                        pricePerPerson += menuItem.BasePrice;
+                        var menuItem = await _context.MenuItems.FindAsync(menuItemId);
+                        if (menuItem != null)
+                        {
+                            pricePerPerson += menuItem.BasePrice;
+                            menuItemDetails[menuItemId] = menuItem.BasePrice;
+                        }
                     }
+                }
+                catch
+                {
+                    // MenuItems table doesn't exist, use default pricing
+                    pricePerPerson = 100 * selectedMenuIds.Count;
                 }
 
                 // Calculate total price: (price per person × guests) + operation fee
@@ -121,6 +152,15 @@ namespace EventPack.Controllers
                         userInfo.UserAddress = model.EventLocation;
                 }
 
+                // Create menu items JSON
+                var menuItemsJson = JsonSerializer.Serialize(new
+                {
+                    items = selectedMenuIds,
+                    pricePerPerson = pricePerPerson,
+                    operationFee = operationFee,
+                    totalMenuPrice = totalMenuPrice
+                });
+
                 // Create booking
                 var booking = new Booking
                 {
@@ -131,30 +171,11 @@ namespace EventPack.Controllers
                     EventLocation = model.EventLocation ?? "",
                     EventDate = model.EventDate,
                     TotalPrice = totalPrice,
+                    MenuItemsJson = menuItemsJson,
                     BookingStatus = "pending"
                 };
 
                 _context.Bookings.Add(booking);
-                await _context.SaveChangesAsync();
-
-                // Create BookingMenuItem records (quantity = 1 per person for all guests)
-                foreach (var menuItemId in selectedMenuIds)
-                {
-                    var menuItem = await _context.MenuItems.FindAsync(menuItemId);
-                    if (menuItem != null)
-                    {
-                        var bookingMenuItem = new BookingMenuItem
-                        {
-                            BookingId = booking.BookingId,
-                            MenuItemId = menuItemId,
-                            Quantity = model.TotalGuests,  // Quantity = number of guests
-                            UnitPrice = menuItem.BasePrice,
-                            TotalPrice = menuItem.BasePrice * model.TotalGuests
-                        };
-                        _context.BookingMenuItems.Add(bookingMenuItem);
-                    }
-                }
-
                 await _context.SaveChangesAsync();
 
                 return RedirectToAction("Confirmation", new { bookingId = booking.BookingId });
@@ -162,9 +183,14 @@ namespace EventPack.Controllers
             catch (Exception ex)
             {
                 ModelState.AddModelError("", $"เกิดข้อผิดพลาด: {ex.Message}");
-                var menuItems = await _context.MenuItems
-                    .GroupBy(m => m.Category)
-                    .ToDictionaryAsync(g => g.Key, g => g.ToList());
+                Dictionary<string, List<MenuItem>>? menuItems = null;
+                try
+                {
+                    menuItems = await _context.MenuItems
+                        .GroupBy(m => m.Category)
+                        .ToDictionaryAsync(g => g.Key, g => g.ToList());
+                }
+                catch { menuItems = new Dictionary<string, List<MenuItem>>(); }
                 ViewBag.MenuItemsByCategory = menuItems;
                 return View(model);
             }
@@ -174,13 +200,11 @@ namespace EventPack.Controllers
         public async Task<IActionResult> Confirmation(string bookingId)
         {
             var booking = await _context.Bookings
-                .Include(b => b.BookingMenuItems)
-                .ThenInclude(bm => bm.MenuItem)
                 .FirstOrDefaultAsync(b => b.BookingId == bookingId);
 
             if (booking == null)
             {
-                return NotFound();
+                return RedirectToAction("Create");
             }
 
             var userInfo = await _context.Userinformations.FirstOrDefaultAsync(u => u.UserId == booking.UserId);
@@ -199,8 +223,6 @@ namespace EventPack.Controllers
             }
 
             var bookings = await _context.Bookings
-                .Include(b => b.BookingMenuItems)
-                .ThenInclude(bm => bm.MenuItem)
                 .Where(b => b.UserId == userId)
                 .ToListAsync();
 
@@ -219,43 +241,57 @@ namespace EventPack.Controllers
         [HttpGet]
         public async Task<IActionResult> GetMenuItemsByCategory(string category)
         {
-            var items = await _context.MenuItems
-                .Where(m => m.Category == category)
-                .OrderBy(m => m.ItemName)
-                .ToListAsync();
-
-            return Json(new
+            try
             {
-                success = true,
-                items = items.Select(i => new
+                var items = await _context.MenuItems
+                    .Where(m => m.Category == category)
+                    .OrderBy(m => m.ItemName)
+                    .ToListAsync();
+
+                return Json(new
                 {
-                    id = i.MenuItemId,
-                    name = i.ItemName,
-                    price = i.BasePrice
-                })
-            });
+                    success = true,
+                    items = items.Select(i => new
+                    {
+                        id = i.MenuItemId,
+                        name = i.ItemName,
+                        price = i.BasePrice
+                    })
+                });
+            }
+            catch
+            {
+                return Json(new { success = false, items = new List<object>() });
+            }
         }
 
         // API: Calculate total price
         [HttpPost]
         public async Task<IActionResult> CalculatePrice([FromBody] Dictionary<string, int> selectedItems)
         {
-            decimal totalPrice = 0;
-            
-            foreach (var item in selectedItems)
+            try
             {
-                var menuItem = await _context.MenuItems.FindAsync(item.Key);
-                if (menuItem != null)
+                decimal totalPrice = 0;
+                
+                foreach (var item in selectedItems)
                 {
-                    totalPrice += menuItem.BasePrice * item.Value;
+                    var menuItem = await _context.MenuItems.FindAsync(item.Key);
+                    if (menuItem != null)
+                    {
+                        totalPrice += menuItem.BasePrice * item.Value;
+                    }
                 }
-            }
 
-            return Json(new
+                return Json(new
+                {
+                    success = true,
+                    totalPrice = totalPrice
+                });
+            }
+            catch
             {
-                success = true,
-                totalPrice = totalPrice
-            });
+                return Json(new { success = false, totalPrice = 0 });
+            }
         }
 
         // Helper method to calculate operation fee based on guest count
