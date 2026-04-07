@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Text.Json;
-using EventPack.ViewModels;
 namespace EventPack.Controllers
 {
     public class BookingController : Controller
@@ -29,13 +28,15 @@ namespace EventPack.Controllers
                 menuItems = await _context.MenuItems
                     .GroupBy(m => m.Category)
                     .ToDictionaryAsync(g => g.Key, g => g.ToList());
+                Console.WriteLine($"✓ MenuItems Count: {menuItems?.Count ?? 0}");
             }
-            catch
+            catch (Exception ex)
             {
                 // MenuItems table doesn't exist yet, use empty
+                Console.WriteLine($"✗ Error loading menuitems: {ex.Message}");
                 menuItems = new Dictionary<string, List<MenuItem>>();
             }
-            
+
             ViewBag.MenuItemsByCategory = menuItems;
 
             // Get current user info if available
@@ -57,15 +58,17 @@ namespace EventPack.Controllers
 
         // POST: Booking/Create
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
             [Bind("TotalGuests,EventLocation,EventDate,UserPhone")] BookingViewModel model)
         {
             try
             {
                 var userId = HttpContext.Session.GetString("UserId");
+                Console.WriteLine($"📝 BookingCreate POST - UserId: {userId}");
+                
                 if (string.IsNullOrEmpty(userId))
                 {
+                    Console.WriteLine("❌ No UserId in session");
                     ModelState.AddModelError("", "กรุณาเข้าสู่ระบบก่อน");
                     return RedirectToAction("Login", "Account");
                 }
@@ -86,6 +89,7 @@ namespace EventPack.Controllers
                 // Validate that at least one menu item is selected
                 if (selectedMenuIds.Count == 0)
                 {
+                    Console.WriteLine("❌ No menu items selected");
                     ModelState.AddModelError("", "กรุณาเลือกเมนูอาหารอย่างน้อยหนึ่งรายการ");
                     Dictionary<string, List<MenuItem>>? menuItems = null;
                     try
@@ -99,9 +103,12 @@ namespace EventPack.Controllers
                     return View(model);
                 }
 
+                Console.WriteLine($"📋 Selected menu items: {string.Join(", ", selectedMenuIds)}");
+
                 // Validate total guests
                 if (model.TotalGuests < 2)
                 {
+                    Console.WriteLine($"❌ TotalGuests validation failed: {model.TotalGuests}");
                     ModelState.AddModelError("TotalGuests", "จำนวนคนต้องมากกว่า 1 คน");
                     Dictionary<string, List<MenuItem>>? menuItems = null;
                     try
@@ -114,6 +121,8 @@ namespace EventPack.Controllers
                     ViewBag.MenuItemsByCategory = menuItems;
                     return View(model);
                 }
+
+                Console.WriteLine($"✓ TotalGuests: {model.TotalGuests}");
 
                 // Calculate price per person from selected items
                 decimal pricePerPerson = 0;
@@ -166,23 +175,66 @@ namespace EventPack.Controllers
                 {
                     BookingId = GenerateBookingId(),
                     UserId = userId,
-                    PackageId = null,
                     TotalGuests = model.TotalGuests,
                     EventLocation = model.EventLocation ?? "",
                     EventDate = model.EventDate,
                     TotalPrice = totalPrice,
                     MenuItemsJson = menuItemsJson,
-                    BookingStatus = "pending"
+                    BookingStatus = "pending",
+                    CreatedDate = DateTime.Now
                 };
 
-                _context.Bookings.Add(booking);
-                await _context.SaveChangesAsync();
+                Console.WriteLine($"📋 Booking object created:");
+                Console.WriteLine($"  - BookingId: {booking.BookingId}");
+                Console.WriteLine($"  - UserId: {booking.UserId}");
+                Console.WriteLine($"  - TotalGuests: {booking.TotalGuests}");
+                Console.WriteLine($"  - EventLocation: {booking.EventLocation}");
+                Console.WriteLine($"  - TotalPrice: {booking.TotalPrice}");
+                Console.WriteLine($"  - EventDate: {booking.EventDate}");
+                Console.WriteLine($"  - MenuItemsJson: {booking.MenuItemsJson}");
 
+                _context.Bookings.Add(booking);
+                
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateException dbEx)
+                {
+                    Console.WriteLine($"❌ DbUpdateException: {dbEx.Message}");
+                    if (dbEx.InnerException != null)
+                    {
+                        Console.WriteLine($"❌ Inner: {dbEx.InnerException.Message}");
+                    }
+                    throw;
+                }
+                
+                Console.WriteLine($"✅ Booking saved successfully: {booking.BookingId}");
                 return RedirectToAction("Confirmation", new { bookingId = booking.BookingId });
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", $"เกิดข้อผิดพลาด: {ex.Message}");
+                Console.WriteLine($"❌ Exception in Create: {ex.Message}");
+                Console.WriteLine($"Stack: {ex.StackTrace}");
+                
+                // Log inner exceptions
+                var innerEx = ex.InnerException;
+                int level = 1;
+                while (innerEx != null)
+                {
+                    Console.WriteLine($"Inner Exception {level}: {innerEx.Message}");
+                    Console.WriteLine($"Inner Stack {level}: {innerEx.StackTrace}");
+                    innerEx = innerEx.InnerException;
+                    level++;
+                }
+                
+                string errorMsg = ex.Message;
+                if (ex.InnerException != null)
+                {
+                    errorMsg = $"{ex.Message} - {ex.InnerException.Message}";
+                }
+                
+                ModelState.AddModelError("", $"เกิดข้อผิดพลาด: {errorMsg}");
                 Dictionary<string, List<MenuItem>>? menuItems = null;
                 try
                 {

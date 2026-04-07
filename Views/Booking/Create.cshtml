@@ -9,14 +9,26 @@
             <p>เลือกเมนูอาหารที่ต้องการและจองเลยตอนนี้</p>
         </div>
 
-        <form asp-controller="Booking" asp-action="Create" method="post" class="booking-form" id="bookingForm">
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger" style="margin-bottom: 20px; padding: 12px; background: rgba(220, 53, 69, 0.2); border: 1px solid rgba(220, 53, 69, 0.5); border-radius: 6px; color: #ff6b6b;">
+                <strong>❌ ข้อผิดพลาด:</strong>
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <div>@error.ErrorMessage</div>
+                }
+            </div>
+        }
+
+        <form asp-controller="Booking" asp-action="Create" method="post" class="booking-form" id="bookingForm" enctype="multipart/form-data">
             <div class="booking-content">
                 <!-- Left: Menu Selection -->
                 <div class="booking-left">
+                    <!-- Menu Items Selection -->
                     <div class="booking-section menu-section">
                         <h3>🎯 เลือกเมนูอาหาร</h3>
                         <div class="menu-categories">
-                            @if (ViewBag.MenuItemsByCategory != null)
+                            @if (ViewBag.MenuItemsByCategory != null && ViewBag.MenuItemsByCategory.Count > 0)
                             {
                                 @foreach (var category in ViewBag.MenuItemsByCategory)
                                 {
@@ -45,6 +57,10 @@
                                         </div>
                                     </div>
                                 }
+                            }
+                            else
+                            {
+                                <p style="color: #999;">ไม่มีรายการเมนูให้เลือก</p>
                             }
                         </div>
                     </div>
@@ -107,10 +123,20 @@
                         </div>
                     </div>
 
+                    <!-- Payment Confirmation Section -->
+                    <div class="booking-section payment-section">
+                        <h3>💳 ยืนยันการชำระเงิน</h3>
+                        
+                        <!-- Payment Button -->
+                        <button type="button" id="paymentBtn" class="btn btn-payment" onclick="openPaymentModal()">
+                            📱 ชำระเงิน
+                        </button>
+                    </div>
+
                     <!-- Actions -->
                     <div class="booking-actions">
                         <a asp-controller="Home" asp-action="Index" class="btn btn-outline">ยกเลิก</a>
-                        <button type="submit" class="btn btn-primary" id="submitBtn">✓ จองเลยตอนนี้</button>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">✓ ยืนยันการจอง</button>
                     </div>
                 </div>
             </div>
@@ -118,32 +144,86 @@
     </div>
 </div>
 
+<!-- Payment Modal -->
+<div id="paymentModal" class="payment-modal">
+    <div class="payment-modal-content">
+        <span class="payment-modal-close" onclick="closePaymentModal()">&times;</span>
+        <h2 class="modal-title">💳 ชำระเงิน</h2>
+        
+        <div class="modal-body">
+            <!-- QR Code Section -->
+            <div class="qr-code-box-modal">
+                <div class="qr-code-label-modal">📱 สแกน QR Code เพื่อชำระเงิน</div>
+                <div class="qr-code-container-modal">
+                    <img src="~/QR/QRCode.png" alt="QR Code Payment" class="qr-code-image-modal">
+                </div>
+                <div class="payment-details">
+                    <p><strong>ยอดที่ต้องจ่าย:</strong></p>
+                    <div class="payment-amount-modal">฿ <span id="paymentAmountModal">0</span></div>
+                </div>
+            </div>
+
+            <!-- Payment Proof Upload Section in Modal -->
+            <div class="modal-payment-proof">
+                <div class="form-group-modal">
+                    <label for="PaymentProof" class="form-label-modal">📸 อัพโหลดหลักฐานการชำระเงิน <span class="text-danger">*</span></label>
+                    <div class="file-upload-box-modal">
+                        <input type="file" 
+                               id="PaymentProof" 
+                               name="PaymentProof" 
+                               accept="image/*" 
+                               class="file-input-modal"
+                               required>
+                        <label for="PaymentProof" class="file-label-modal">
+                            <span class="file-icon-modal">📷</span>
+                            <span class="file-text-modal" id="fileNameModal">คลิกเพื่อเลือกรูปภาพ</span>
+                        </label>
+                        <small class="form-text-modal">รองรับไฟล์: JPG, PNG, GIF (ไม่เกิน 5MB)</small>
+                    </div>
+                </div>
+
+                <div class="payment-note-modal" id="paymentNoteModal" style="display: none;">
+                    <span class="note-icon">✓</span>
+                    <span class="note-text">ได้รับหลักฐานการชำระเงิน</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline-modal" onclick="closePaymentModal()">ยกเลิก</button>
+            <button type="button" class="btn btn-confirm-modal" onclick="confirmPayment()">ยืนยัน</button>
+        </div>
+    </div>
+</div>
+
 <style>
 .booking-container {
-    max-width: 1400px;
-    margin: 40px auto;
-    padding: 20px;
+    max-width: 950px;
+    margin: 30px auto;
+    padding: 12px;
+    box-sizing: border-box;
 }
 
 .booking-card {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 15px;
-    padding: 30px;
+    padding: 20px;
     backdrop-filter: blur(10px);
+    box-sizing: border-box;
 }
 
 .booking-header {
     text-align: center;
-    margin-bottom: 30px;
-    padding-bottom: 20px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
     border-bottom: 2px solid rgba(255, 255, 255, 0.1);
 }
 
 .booking-header h2 {
     color: #fff;
-    font-size: 28px;
-    margin-bottom: 10px;
+    font-size: 24px;
+    margin-bottom: 8px;
 }
 
 .booking-header p {
@@ -154,16 +234,17 @@
 /* Two Column Layout */
 .booking-content {
     display: grid;
-    grid-template-columns: 1.2fr 1fr;
-    gap: 30px;
+    grid-template-columns: 1fr 0.9fr;
+    gap: 20px;
     align-items: start;
+    box-sizing: border-box;
 }
 
 .booking-left {
-    max-height: 800px;
+    max-height: 700px;
     overflow-y: auto;
     overflow-x: hidden;
-    padding-right: 8px;
+    padding-right: 6px;
     border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -197,8 +278,8 @@
 
 .booking-section h3 {
     color: #fff;
-    font-size: 16px;
-    margin-bottom: 15px;
+    font-size: 15px;
+    margin-bottom: 12px;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -209,7 +290,7 @@
     background: rgba(255, 255, 255, 0.05);
     padding: 20px;
     border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(6, 1, 1, 0.1);
 }
 
 .menu-categories {
@@ -228,7 +309,7 @@
 
 .menu-items {
     display: grid;
-    gap: 10px;
+    gap: 8px;
 }
 
 .menu-item {
@@ -236,11 +317,11 @@
     justify-content: space-between;
     align-items: center;
     background: rgba(255, 255, 255, 0.08);
-    padding: 10px 12px;
+    padding: 8px 10px;
     border-radius: 6px;
     border: 1px solid rgba(255, 255, 255, 0.05);
     transition: all 0.3s ease;
-    gap: 10px;
+    gap: 8px;
 }
 
 .menu-item:hover {
@@ -252,14 +333,14 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 2px;
     min-width: 0;
 }
 
 .item-name {
-    color: #fff;
+    color: #0a0202;
     font-weight: 500;
-    font-size: 13px;
+    font-size: 12px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -267,7 +348,7 @@
 
 .item-price {
     color: #ffc107;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
 }
 
@@ -297,7 +378,7 @@
 
 .checkbox-label {
     cursor: pointer;
-    color: #fff;
+    color: #100404;
     font-size: 13px;
     font-weight: 600;
     padding: 4px 8px;
@@ -340,7 +421,7 @@
     text-align: center;
     border: none;
     background: transparent;
-    color: #fff;
+    color: #0f0101;
     font-weight: bold;
     font-size: 12px;
 }
@@ -350,24 +431,24 @@
 }
 
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 12px;
 }
 
 .form-label {
-    color: #fff;
+    color: #120303;
     font-weight: 500;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     display: block;
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .form-control {
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #fff;
-    padding: 8px 10px;
+    color: #120404;
+    padding: 6px 8px;
     border-radius: 5px;
-    font-size: 13px;
+    font-size: 12px;
     width: 100%;
     box-sizing: border-box;
 }
@@ -379,12 +460,12 @@
 .form-control:focus {
     background: rgba(255, 255, 255, 0.12);
     border-color: #ffc107;
-    color: #fff;
+    color: #030000;
     outline: none;
 }
 
 .form-text {
-    color: rgba(255, 255, 255, 0.5) !important;
+    color: rgba(36, 11, 11, 0.5) !important;
     font-size: 12px;
     margin-top: 3px;
     display: block;
@@ -397,7 +478,7 @@
 .price-summary {
     background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(255, 193, 7, 0.05));
     border: 2px solid rgba(255, 193, 7, 0.3);
-    padding: 20px;
+    padding: 15px;
     border-radius: 10px;
     position: sticky;
     top: 20px;
@@ -407,17 +488,17 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 0;
+    padding: 8px 0;
     color: rgba(255, 255, 255, 0.8);
-    font-size: 13px;
+    font-size: 12px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .price-row.total {
     border-bottom: none;
-    padding-top: 12px;
-    margin-top: 12px;
-    font-size: 16px;
+    padding-top: 10px;
+    margin-top: 10px;
+    font-size: 15px;
     font-weight: bold;
     color: #fff;
     border-top: 1px solid rgba(255, 193, 7, 0.3);
@@ -425,28 +506,429 @@
 
 .price-highlight {
     color: #ffc107;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Payment Section */
+.payment-section {
+    background: rgba(46, 80, 144, 0.1);
+    border: 2px solid rgba(46, 80, 144, 0.3);
+    padding: 15px;
+    border-radius: 10px;
+}
+
+.payment-section h3 {
+    color: #fff;
+    font-size: 15px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+}
+
+.qr-code-box {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 15px;
+}
+
+.qr-code-label {
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.qr-code-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 12px;
+    background: #fff;
+    padding: 10px;
+    border-radius: 6px;
+}
+
+.qr-code-image {
+    max-width: 200px;
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+}
+
+.qr-code-info {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 13px;
+}
+
+.payment-amount {
+    color: #ffc107;
     font-size: 20px;
     font-weight: bold;
+    margin-top: 5px;
+}
+
+/* File Upload */
+.file-upload-box {
+    position: relative;
+    margin-top: 8px;
+}
+
+.file-input {
+    display: none;
+}
+
+.file-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 15px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px dashed rgba(255, 193, 7, 0.4);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 120px;
+}
+
+.file-label:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 193, 7, 0.6);
+}
+
+.file-input:focus + .file-label {
+    border-color: #ffc107;
+    background: rgba(255, 193, 7, 0.1);
+}
+
+.file-icon {
+    font-size: 32px;
+    margin-bottom: 8px;
+}
+
+.file-text {
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+    font-size: 14px;
+    text-align: center;
+}
+
+.file-input:valid + .file-label .file-text {
+    color: #ffc107;
+}
+
+.payment-note {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: rgba(39, 174, 96, 0.2);
+    border: 1px solid rgba(39, 174, 96, 0.4);
+    border-radius: 6px;
+    color: #52d273;
+    font-size: 13px;
+    margin-top: 10px;
+}
+
+.note-icon {
+    font-size: 16px;
+}
+
+/* Payment Button */
+.btn-payment {
+    width: 100%;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #2E5090 0%, #3D5E8F 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 15px;
+}
+
+.btn-payment:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(46, 80, 144, 0.4);
+}
+
+.btn-payment:active {
+    transform: translateY(0);
+}
+
+/* Payment Modal */
+.payment-modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    animation: fadeIn 0.3s ease;
+}
+
+@@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.payment-modal-content {
+    background-color: #f5f3f0;
+    margin: 10% auto;
+    padding: 20px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 420px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideDown 0.3s ease;
+    box-sizing: border-box;
+}
+
+@@keyframes slideDown {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.payment-modal-close {
+    color: #2C3E50;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.payment-modal-close:hover {
+    color: #E74C3C;
+    transform: scale(1.2);
+}
+
+.modal-title {
+    color: #2E5090;
+    font-size: 20px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.modal-body {
+    margin: 15px 0;
+}
+
+.qr-code-box-modal {
+    background: #fff;
+    padding: 15px;
+    border-radius: 10px;
+    border: 2px solid #E8D5C4;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.qr-code-label-modal {
+    color: #2E5090;
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 12px;
+    display: block;
+}
+
+.qr-code-container-modal {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 12px;
+    background: #f5f3f0;
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.qr-code-image-modal {
+    max-width: 120px;
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+    border: 2px solid #2E5090;
+}
+
+.payment-details {
+    color: #2C3E50;
+    font-size: 13px;
+}
+
+.payment-details p {
+    margin: 4px 0;
+    font-weight: 600;
+}
+
+.payment-amount-modal {
+    color: #D4A574;
+    font-size: 22px;
+    font-weight: bold;
+    margin-top: 8px;
+}
+
+/* Payment Proof in Modal */
+.modal-payment-proof {
+    background: #fff;
+    padding: 15px;
+    border-radius: 10px;
+    border: 2px solid #E8D5C4;
+}
+
+.form-group-modal {
+    margin-bottom: 12px;
+}
+
+.form-label-modal {
+    color: #2C3E50;
+    font-weight: 600;
+    margin-bottom: 6px;
+    display: block;
+    font-size: 13px;
+}
+
+.file-upload-box-modal {
+    position: relative;
+    margin-top: 6px;
+}
+
+.file-input-modal {
+    display: none;
+}
+
+.file-label-modal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 18px 12px;
+    background: #f5f3f0;
+    border: 2px dashed #D4A574;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 80px;
+}
+
+.file-label-modal:hover {
+    background: #efe8e0;
+    border-color: #2E5090;
+}
+
+.file-input-modal:focus + .file-label-modal {
+    border-color: #2E5090;
+    background: #e8e0d8;
+}
+
+.file-icon-modal {
+    font-size: 24px;
+    margin-bottom: 6px;
+}
+
+.file-text-modal {
+    color: #2C3E50;
+    font-weight: 600;
+    font-size: 12px;
+    text-align: center;
+}
+
+.form-text-modal {
+    color: #999;
+    font-size: 11px;
+    margin-top: 4px;
+    display: block;
+}
+
+.payment-note-modal {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: rgba(39, 174, 96, 0.2);
+    border: 1px solid rgba(39, 174, 96, 0.4);
+    border-radius: 6px;
+    color: #52d273;
+    font-size: 12px;
+    margin-top: 8px;
+}
+
+.text-danger {
+    color: #ff6b6b;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.btn-outline-modal {
+    padding: 9px 20px;
+    background: #E8D5C4;
+    color: #2E5090;
+    border: 2px solid #2E5090;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 13px;
+}
+
+.btn-outline-modal:hover {
+    background: #D4A574;
+    transform: scale(1.05);
+}
+
+.btn-confirm-modal {
+    padding: 9px 20px;
+    background: linear-gradient(135deg, #2E5090 0%, #3D5E8F 100%);
+    color: #fff;
+    border: 2px solid #2E5090;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 13px;
+}
+
+.btn-confirm-modal:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(46, 80, 144, 0.4);
 }
 
 .booking-actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
-    margin-top: 20px;
+    margin-top: 15px;
 }
 
 .btn {
-    padding: 11px 16px;
+    padding: 9px 14px;
     border: none;
     border-radius: 6px;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
     text-decoration: none;
     text-align: center;
-    min-height: 44px;
+    min-height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -476,6 +958,7 @@
 }
 
 /* Responsive Design */
+/* Tablet (1024px and below) */
 @@media (max-width: 1024px) {
     .booking-content {
         grid-template-columns: 1fr 1fr;
@@ -486,33 +969,42 @@
         max-height: 600px;
         border-right: 1px solid rgba(255, 255, 255, 0.1);
     }
+    
+    .qr-code-image {
+        max-width: 150px;
+    }
 }
 
+/* Mobile (768px and below) */
 @@media (max-width: 768px) {
     .booking-container {
-        margin: 20px auto;
-        padding: 15px;
+        margin: 15px auto;
+        padding: 12px;
     }
 
     .booking-card {
-        padding: 20px;
+        padding: 15px;
     }
 
     .booking-header h2 {
-        font-size: 22px;
+        font-size: 20px;
+    }
+
+    .booking-header p {
+        font-size: 13px;
     }
 
     .booking-content {
         grid-template-columns: 1fr;
-        gap: 20px;
+        gap: 15px;
     }
 
     .booking-left {
-        max-height: none;
+        max-height: 400px;
         border-right: none;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         padding-right: 0;
-        padding-bottom: 20px;
+        padding-bottom: 15px;
         margin-bottom: 10px;
     }
 
@@ -527,12 +1019,233 @@
         justify-content: flex-end;
     }
 
+    .booking-section h3 {
+        font-size: 15px;
+    }
+
     .booking-actions {
         grid-template-columns: 1fr;
     }
 
     .price-summary {
         position: static;
+    }
+    
+    .form-control {
+        padding: 7px 8px;
+        font-size: 12px;
+    }
+
+    .form-label {
+        font-size: 13px;
+    }
+
+    .qr-code-container {
+        min-height: 180px;
+    }
+    
+    .qr-code-image {
+        max-width: 100px;
+    }
+    
+    .file-label {
+        padding: 15px 8px;
+        min-height: 80px;
+    }
+    
+    .payment-modal-content {
+        width: 90%;
+        margin: 30% auto;
+        padding: 18px;
+        max-width: 450px;
+    }
+    
+    .qr-code-image-modal {
+        max-width: 110px;
+    }
+    
+    .modal-title {
+        font-size: 18px;
+    }
+
+    .qr-code-box-modal {
+        padding: 15px;
+    }
+
+    .payment-amount-modal {
+        font-size: 24px;
+    }
+
+    .btn-outline-modal, .btn-confirm-modal {
+        padding: 9px 20px;
+        font-size: 13px;
+    }
+}
+
+/* Small Mobile (480px and below) */
+@@media (max-width: 480px) {
+    body {
+        font-size: 13px;
+    }
+
+    .booking-container {
+        margin: 10px auto;
+        padding: 8px;
+    }
+
+    .booking-card {
+        padding: 12px;
+    }
+
+    .booking-header h2 {
+        font-size: 18px;
+        margin-bottom: 8px;
+    }
+
+    .booking-section h3 {
+        font-size: 14px;
+        margin-bottom: 12px;
+    }
+
+    .booking-left {
+        max-height: 300px;
+        padding-bottom: 12px;
+        margin-bottom: 8px;
+    }
+
+    .menu-item {
+        padding: 8px;
+    }
+
+    .menu-category {
+        margin-bottom: 10px;
+    }
+
+    .menu-category h4 {
+        font-size: 13px;
+    }
+
+    .item-name {
+        font-size: 12px;
+    }
+
+    .item-price {
+        font-size: 11px;
+    }
+
+    .form-group {
+        margin-bottom: 12px;
+    }
+
+    .form-control {
+        padding: 6px 7px;
+        font-size: 11px;
+        height: 32px;
+    }
+
+    .form-label {
+        font-size: 12px;
+        margin-bottom: 4px;
+    }
+
+    .form-text {
+        font-size: 11px;
+    }
+
+    .price-row {
+        font-size: 12px;
+        padding: 6px 0;
+    }
+
+    .price-highlight {
+        font-size: 16px;
+    }
+
+    .btn-payment {
+        padding: 9px 14px;
+        font-size: 12px;
+    }
+
+    .payment-modal-content {
+        width: 95%;
+        margin: 50% auto;
+        padding: 15px;
+        max-width: 100%;
+    }
+
+    .qr-code-container-modal {
+        padding: 10px;
+    }
+
+    .qr-code-image-modal {
+        max-width: 100px;
+    }
+
+    .modal-title {
+        font-size: 16px;
+        margin-bottom: 15px;
+    }
+
+    .qr-code-label-modal {
+        font-size: 13px;
+    }
+
+    .qr-code-box-modal {
+        padding: 12px;
+    }
+
+    .payment-details p {
+        font-size: 12px;
+    }
+
+    .payment-amount-modal {
+        font-size: 20px;
+    }
+
+    .form-label-modal {
+        font-size: 13px;
+    }
+
+    .file-label-modal {
+        padding: 15px 8px;
+        min-height: 70px;
+    }
+
+    .file-icon-modal {
+        font-size: 24px;
+    }
+
+    .file-text-modal {
+        font-size: 12px;
+    }
+
+    .form-text-modal {
+        font-size: 10px;
+    }
+
+    .modal-footer {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .btn-outline-modal, .btn-confirm-modal {
+        width: 100%;
+        padding: 10px 15px;
+        font-size: 12px;
+    }
+
+    .modal-payment-proof {
+        padding: 12px;
+    }
+
+    .payment-note-modal {
+        font-size: 11px;
+        padding: 8px 10px;
+    }
+
+    input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
     }
 }
 </style>
@@ -570,20 +1283,102 @@ function updateTotalPrice() {
     document.getElementById('operationFee').textContent = `฿ ${operationFee.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     document.getElementById('guestCount').textContent = guestCount;
     document.getElementById('totalPrice').textContent = `฿ ${totalPrice.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    
+    // Update modal payment amount
+    const paymentAmountModal = document.getElementById('paymentAmountModal');
+    if (paymentAmountModal) {
+        paymentAmountModal.textContent = totalPrice.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+}
+
+// Payment Modal Functions
+function openPaymentModal() {
+    const modal = document.getElementById('paymentModal');
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function closePaymentModal() {
+    const modal = document.getElementById('paymentModal');
+    modal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+function confirmPayment() {
+    const paymentProof = document.getElementById('PaymentProof').files;
+    
+    if (!paymentProof || paymentProof.length === 0) {
+        alert('❌ กรุณาอัพโหลดหลักฐานการชำระเงิน');
+        return;
+    }
+    
+    const fileSize = (paymentProof[0].size / (1024 * 1024)).toFixed(2);
+    if (fileSize > 5) {
+        alert('❌ ไฟล์ขนาดใหญ่เกินไป (ต้องไม่เกิน 5MB)');
+        document.getElementById('PaymentProof').value = '';
+        document.getElementById('fileNameModal').textContent = 'คลิกเพื่อเลือกรูปภาพ';
+        document.getElementById('paymentNoteModal').style.display = 'none';
+        return;
+    }
+    
+    closePaymentModal();
+}
+
+// Close modal when clicking outside of it
+window.onclick = function(event) {
+    const modal = document.getElementById('paymentModal');
+    if (event.target == modal) {
+        closePaymentModal();
+    }
 }
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     updateTotalPrice();
+    
+    // File upload handling for payment proof in modal
+    const fileInput = document.getElementById('PaymentProof');
+    const fileNameDisplay = document.getElementById('fileNameModal');
+    const paymentNote = document.getElementById('paymentNoteModal');
+    
+    if (fileInput) {
+        fileInput.addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+                const fileName = this.files[0].name;
+                const fileSize = (this.files[0].size / (1024 * 1024)).toFixed(2);
+                
+                if (fileSize > 5) {
+                    alert('❌ ไฟล์ขนาดใหญ่เกินไป (ต้องไม่เกิน 5MB)');
+                    this.value = '';
+                    fileNameDisplay.textContent = 'คลิกเพื่อเลือกรูปภาพ';
+                    paymentNote.style.display = 'none';
+                } else {
+                    fileNameDisplay.textContent = fileName;
+                    paymentNote.style.display = 'block';
+                }
+            }
+        });
+    }
 });
 
 // Form validation
 document.getElementById('bookingForm').addEventListener('submit', function(e) {
     const selectedItems = Array.from(document.querySelectorAll('.menu-checkbox:checked'));
+    const paymentProof = document.getElementById('PaymentProof').files;
+    
+    let errorMsg = '';
     
     if (selectedItems.length === 0) {
+        errorMsg += '✗ กรุณาเลือกเมนูอาหารอย่างน้อยหนึ่งรายการ\n';
+    }
+    
+    if (!paymentProof || paymentProof.length === 0) {
+        errorMsg += '✗ กรุณาอัพโหลดหลักฐานการชำระเงิน\n';
+    }
+    
+    if (errorMsg) {
         e.preventDefault();
-        alert('กรุณาเลือกเมนูอาหารอย่างน้อยหนึ่งรายการ');
+        alert(errorMsg);
     }
 });
 </script>

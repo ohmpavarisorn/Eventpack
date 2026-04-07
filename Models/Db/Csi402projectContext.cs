@@ -18,17 +18,9 @@ public partial class Csi402projectContext : DbContext
 
     public virtual DbSet<Booking> Bookings { get; set; }
 
-    public virtual DbSet<Foodpackage> Foodpackages { get; set; }
-
-    public virtual DbSet<Payment> Payments { get; set; }
-
     public virtual DbSet<Userinformation> Userinformations { get; set; }
 
-    public virtual DbSet<LabStudent> Labstudents { get; set; }
-
     public virtual DbSet<MenuItem> MenuItems { get; set; }
-
-    public virtual DbSet<Staff> Staffs { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -40,7 +32,6 @@ public partial class Csi402projectContext : DbContext
         modelBuilder.Entity<Booking>(entity =>
         {
             entity.HasKey(e => e.BookingId).HasName("PRIMARY");
-
             entity.ToTable("bookings");
 
             entity.Property(e => e.BookingId)
@@ -57,11 +48,6 @@ public partial class Csi402projectContext : DbContext
                 .HasMaxLength(255)
                 .UseCollation("utf8mb3_general_ci")
                 .HasCharSet("utf8mb3");
-            entity.Property(e => e.PackageId)
-                .HasMaxLength(10)
-                .HasColumnName("PackageID")
-                .UseCollation("utf8mb3_general_ci")
-                .HasCharSet("utf8mb3");
             entity.Property(e => e.TotalPrice).HasPrecision(10, 2);
             entity.Property(e => e.UserId)
                 .HasMaxLength(10)
@@ -72,70 +58,17 @@ public partial class Csi402projectContext : DbContext
                 .HasColumnType("longtext")
                 .UseCollation("utf8mb3_general_ci")
                 .HasCharSet("utf8mb3");
-
-            // Foreign key relationships
-            entity.HasOne(e => e.PackageIdNavigation)
+            
+            // Foreign key relationship to Userinformation
+            entity.HasOne(d => d.UserIdNavigation)
                 .WithMany()
-                .HasForeignKey(e => e.PackageId)
-                .IsRequired(false);
-
-            entity.HasOne(e => e.UserIdNavigation)
-                .WithMany()
-                .HasForeignKey(e => e.UserId)
-                .IsRequired(false);
-        });
-
-        modelBuilder.Entity<Foodpackage>(entity =>
-        {
-            entity.HasKey(e => e.PackageId).HasName("PRIMARY");
-
-            entity.ToTable("foodpackages");
-
-            entity.Property(e => e.PackageId)
-                .HasMaxLength(10)
-                .HasColumnName("PackageID")
-                .UseCollation("utf8mb3_general_ci")
-                .HasCharSet("utf8mb3");
-            entity.Property(e => e.Description).HasColumnType("text");
-            entity.Property(e => e.PackageName)
-                .HasMaxLength(100)
-                .UseCollation("utf8mb3_general_ci")
-                .HasCharSet("utf8mb3");
-            entity.Property(e => e.PricePerPerson).HasPrecision(10, 2);
-        });
-
-        modelBuilder.Entity<Payment>(entity =>
-        {
-            entity.HasKey(e => e.PaymentId).HasName("PRIMARY");
-
-            entity.ToTable("payments");
-
-            entity.Property(e => e.PaymentId)
-                .HasMaxLength(10)
-                .HasColumnName("PaymentID")
-                .UseCollation("utf8mb3_general_ci")
-                .HasCharSet("utf8mb3");
-            entity.Property(e => e.AmountPaid).HasPrecision(10, 2);
-            entity.Property(e => e.BookingId)
-                .HasMaxLength(10)
-                .HasColumnName("BookingID")
-                .UseCollation("utf8mb3_general_ci")
-                .HasCharSet("utf8mb3");
-            entity.Property(e => e.EvidenceImage)
-                .HasMaxLength(255)
-                .UseCollation("utf8mb3_general_ci")
-                .HasCharSet("utf8mb3");
-            entity.Property(e => e.PaymentDate).HasColumnType("datetime");
-            entity.Property(e => e.PaymentMethod)
-                .HasMaxLength(50)
-                .UseCollation("utf8mb3_general_ci")
-                .HasCharSet("utf8mb3");
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("bookings_ibfk_1");
         });
 
         modelBuilder.Entity<Userinformation>(entity =>
         {
             entity.HasKey(e => e.UserId).HasName("PRIMARY");
-
             entity.ToTable("userinformation");
 
             entity.Property(e => e.UserId)
@@ -156,19 +89,13 @@ public partial class Csi402projectContext : DbContext
                 .HasMaxLength(255)
                 .UseCollation("utf8mb3_general_ci")
                 .HasCharSet("utf8mb3");
+            entity.Property(e => e.Role)
+                .HasMaxLength(50)
+                .HasDefaultValue("customer")
+                .UseCollation("utf8mb3_general_ci")
+                .HasCharSet("utf8mb3");
         });
-        modelBuilder.Entity<LabStudent>(entity =>
-{
-    entity.HasKey(e => e.StdID).HasName("PRIMARY"); // ระบุ Primary Key
-    entity.ToTable("labstudent"); // ชื่อ Table ใน Database (ควรใช้ตัวเล็กตามที่สร้างใน SQL)
 
-    entity.Property(e => e.StdID).HasMaxLength(10);
-    entity.Property(e => e.StdPASSWORD).HasMaxLength(30);
-    entity.Property(e => e.StdName).HasMaxLength(50);
-    entity.Property(e => e.STDLastname).HasMaxLength(100);
-});
-
-        // MenuItems configuration
         modelBuilder.Entity<MenuItem>(entity =>
         {
             entity.HasKey(e => e.MenuItemId).HasName("PRIMARY");
@@ -189,29 +116,6 @@ public partial class Csi402projectContext : DbContext
                 .HasCharSet("utf8mb3");
             entity.Property(e => e.BasePrice).HasPrecision(10, 2);
         });
-
-        // Staff configuration
-        modelBuilder.Entity<Staff>(entity =>
-        {
-            entity.HasKey(e => e.StaffId).HasName("PRIMARY");
-            entity.ToTable("staff");
-
-            entity.Property(e => e.StaffId)
-                .HasMaxLength(10)
-                .HasColumnName("StaffID")
-                .UseCollation("utf8mb3_general_ci")
-                .HasCharSet("utf8mb3");
-            entity.Property(e => e.FullName)
-                .HasMaxLength(50)
-                .UseCollation("utf8mb3_general_ci")
-                .HasCharSet("utf8mb3");
-            entity.Property(e => e.Role)
-                .HasMaxLength(20)
-                .UseCollation("utf8mb3_general_ci")
-                .HasCharSet("utf8mb3");
-            entity.Property(e => e.Phone).HasMaxLength(15);
-        });
-
 
         OnModelCreatingPartial(modelBuilder);
     }

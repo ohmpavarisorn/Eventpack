@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using EventPack.Models.Db;
+using EventPack.Utilities;
 using System;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,6 +28,16 @@ builder.Services.AddDbContext<Csi402projectContext>(options =>
 
 var app = builder.Build();
 
+// Create restaurant database tables if they don't exist
+try
+{
+    await DatabaseInitializer.ExecuteSqlScriptAsync();
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"⚠ Warning: Could not initialize tables: {ex.Message}");
+}
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -47,7 +58,6 @@ app.UseAuthorization();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<Csi402projectContext>();
-    context.Database.EnsureCreated();
     
     // Add MenuItemsJson column if it doesn't exist
     try
@@ -62,49 +72,37 @@ using (var scope = app.Services.CreateScope())
         // Column likely already exists, ignore error
     }
     
-    // Seed Foodpackages if empty
-    if (!context.Foodpackages.Any())
+    // Seed MenuItems if empty
+    if (!context.MenuItems.Any())
     {
-        context.Foodpackages.AddRange(
-            new Foodpackage 
-            { 
-                PackageId = "PKG001", 
-                PackageName = "Signature Sushi", 
-                Description = "ซูชิรวม (Nigiri), โรลแซลมอน, ซุปมิโซะ, สลัดผัก - ราคาประหยัดที่สุด จัดการง่าย",
-                PricePerPerson = 890m,
-                MinGuests = 10
+        context.MenuItems.AddRange(
+            new MenuItem
+            {
+                MenuItemId = "M001",
+                ItemName = "ซูชิแซลมอน",
+                Category = "ซูชิ",
+                BasePrice = 120m
             },
-            new Foodpackage 
-            { 
-                PackageId = "PKG002", 
-                PackageName = "Healthy Ocean", 
-                Description = "สลัดอโวคาโดกุ้งสด, ปลาหิมะย่างเกลือ, ข้าวญี่ปุ่นธัญพืช, ผลไม้สด - เจาะกลุ่มคนรักสุขภาพ",
-                PricePerPerson = 950m,
-                MinGuests = 8
+            new MenuItem
+            {
+                MenuItemId = "M002",
+                ItemName = "โรลแซลมอน",
+                Category = "ซูชิ",
+                BasePrice = 150m
             },
-            new Foodpackage 
-            { 
-                PackageId = "PKG003", 
-                PackageName = "Grand Sashimi", 
-                Description = "เซตซาซิมิรวมพรีเมียม (แซลมอน, ฮามาจิ, ทูน่า, หอยเชลล์), หัวปลาต้มซีอิ๊ว, เทมปุระรวม - ดูหรูหรา ถ่ายรูปสวย",
-                PricePerPerson = 1500m,
-                MinGuests = 10
+            new MenuItem
+            {
+                MenuItemId = "M003",
+                ItemName = "ซุปมิโซะ",
+                Category = "ซุป",
+                BasePrice = 50m
             },
-            new Foodpackage 
-            { 
-                PackageId = "PKG004", 
-                PackageName = "Wagyu & Sushi Party", 
-                Description = "ซูชิเนื้อวากิวเบิร์นไฟ, สเต็กเนื้อวากิว A4, ยำสาหร่าย, ข้าวหน้าเนื้อ - สำหรับคนรักเนื้อ",
-                PricePerPerson = 1890m,
-                MinGuests = 15
-            },
-            new Foodpackage 
-            { 
-                PackageId = "PKG005", 
-                PackageName = "Ultimate Omakase Home", 
-                Description = "จัดตามใจเชฟ โดยมีวัตถุดิบตามฤดูกาล 12-15 รายการ - พรีเมียมที่สุด เชฟจะไปปั้นให้ดูต่อหน้าทีละคำ",
-                PricePerPerson = 2500m,
-                MinGuests = 20
+            new MenuItem
+            {
+                MenuItemId = "M004",
+                ItemName = "สลัดผัก",
+                Category = "สลัด",
+                BasePrice = 80m
             }
         );
         context.SaveChanges();

@@ -9,8 +9,6 @@ public partial class Booking
 
     public string UserId { get; set; } = null!;
 
-    public string? PackageId { get; set; }
-
     public DateTime? EventDate { get; set; }
 
     public string? EventLocation { get; set; }
@@ -21,10 +19,10 @@ public partial class Booking
 
     public string? BookingStatus { get; set; }
 
-    // Menu items selection stored as JSON
     public string? MenuItemsJson { get; set; }
 
+    public DateTime? CreatedDate { get; set; }
+
     // Navigation properties
-    public virtual Foodpackage? PackageIdNavigation { get; set; }
     public virtual Userinformation? UserIdNavigation { get; set; }
 }

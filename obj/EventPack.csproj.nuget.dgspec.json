@@ -60,7 +60,15 @@
               "target": "Package",
               "version": "[9.0.0, )"
             },
+            "MySqlConnector": {
+              "target": "Package",
+              "version": "[2.4.0, )"
+            },
             "Pomelo.EntityFrameworkCore.MySql": {
+              "target": "Package",
+              "version": "[9.0.0, )"
+            },
+            "System.Drawing.Common": {
               "target": "Package",
               "version": "[9.0.0, )"
             }

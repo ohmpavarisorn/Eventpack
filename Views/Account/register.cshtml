@@ -7,48 +7,85 @@
     <div class="register-card shadow">
         <div class="card-body p-4">
 
-            <h4 class="text-center mb-4">Create Your Account</h4>
-            <p class="text-center text-muted mb-4" style="color: #94a3b8; font-size: 14px;">Join us today and start booking events</p>
+            <h4 class="text-center mb-4">สร้างบัญชีใหม่</h4>
+            <p class="text-center text-muted mb-4" style="color: #94a3b8; font-size: 14px;">เข้าร่วมกับเราและเริ่มจองเหตุการณ์</p>
+
+            @if (ViewBag.ErrorMessage != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong>❌ ข้อผิดพลาด:</strong>
+                    @ViewBag.ErrorMessage
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
 
             <form asp-controller="Account" asp-action="register" method="post">
                 <div class="mb-3">
-                    <label for="name" class="form-label">Username</label>
-                    <input type="text" class="form-control" id="name" name="Name" placeholder="Choose a username" required>
+                    <label for="name" class="form-label">ชื่อผู้ใช้ <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="name" name="Name" placeholder="เลือกชื่อผู้ใช้" required>
                 </div>
 
                 <div class="mb-3">
-                    <label for="address" class="form-label">Address</label>
-                    <input type="text" class="form-control" id="address" name="Address" placeholder="Enter your address" required>
+                    <label for="address" class="form-label">ที่อยู่ <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="address" name="Address" placeholder="กรอกที่อยู่ของคุณ" required>
                 </div>
 
                 <div class="mb-3">
-                    <label for="phone" class="form-label">Phone</label>
-                    <input type="tel" class="form-control" id="phone" name="Phone" placeholder="Enter your phone number" required>
+                    <label for="phone" class="form-label">เบอร์โทรศัพท์ <span class="text-danger">*</span></label>
+                    <input type="tel" class="form-control" id="phone" name="Phone" placeholder="กรอกเบอร์โทรศัพท์" required>
                 </div>
 
                 <div class="mb-3">
-                    <label for="password" class="form-label">Password</label>
-                    <input type="password" class="form-control" id="password" name="Password" placeholder="Create a strong password" required>
+                    <label for="password" class="form-label">รหัสผ่าน <span class="text-danger">*</span></label>
+                    <input type="password" class="form-control" id="password" name="Password" placeholder="สร้างรหัสผ่านที่ปลอดภัย" required>
                 </div>
 
                 <div class="mb-3">
-                    <label for="confirmPassword" class="form-label">Confirm Password</label>
-                    <input type="password" class="form-control" id="confirmPassword" name="ConfirmPassword" placeholder="Confirm your password" required>
+                    <label for="confirmPassword" class="form-label">ยืนยันรหัสผ่าน <span class="text-danger">*</span></label>
+                    <input type="password" class="form-control" id="confirmPassword" name="ConfirmPassword" placeholder="ยืนยันรหัสผ่านของคุณ" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="role" class="form-label">ประเภทบัญชี <span class="text-danger">*</span></label>
+                    <select class="form-control" id="role" name="Role" required>
+                        <option value="customer" selected>ลูกค้า (Customer)</option>
+                        <option value="admin">ผู้ดูแลระบบ (Admin)</option>
+                    </select>
+                    <small class="form-text">เลือกประเภทบัญชีที่เหมาะสม</small>
                 </div>
 
                 <div class="d-grid">
                     <button type="submit" class="btn btn-primary btn-lg">
-                        Create Account
+                        🔐 สร้างบัญชี
                     </button>
                 </div>
 
             </form>
 
             <div class="footer-text">
-                Already have an account? <a asp-controller="Account" asp-action="Login">Login here</a>
+                มีบัญชีแล้ว? <a asp-controller="Account" asp-action="Login">เข้าสู่ระบบที่นี่</a>
             </div>
 
         </div>
     </div>
 
 </div>
+
+<script>
+document.querySelector('form').addEventListener('submit', function(e) {
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (password !== confirmPassword) {
+        e.preventDefault();
+        alert('❌ รหัสผ่านไม่ตรงกัน กรุณาตรวจสอบอีกครั้ง');
+        return false;
+    }
+    
+    if (password.length < 6) {
+        e.preventDefault();
+        alert('❌ รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร');
+        return false;
+    }
+});
+</script>

@@ -14,9 +14,8 @@ public class HomeController : Controller
     }
     public IActionResult Index()
     {
-        var packages = (from p in _Db.Foodpackages select p).ToList();
-                   
-        return View(packages);
+        // Return empty model - focus on booking page for menu selection
+        return View(new List<object>());
     }
    
     public IActionResult Privacy()

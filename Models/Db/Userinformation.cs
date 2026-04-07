@@ -14,4 +14,6 @@ public partial class Userinformation
     public string? UserAddress { get; set; }
 
     public string? UserPassword { get; set; }
+
+    public string? Role { get; set; } = "customer";
 }
