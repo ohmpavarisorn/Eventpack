@@ -33,3 +33,21 @@ body:has(.ep-shell){background:#f6f1e5;color:var(--ep-ink);font-family:'DM Sans'
 .ep-summary dl{margin-top:1rem}.ep-summary dl div{display:flex;justify-content:space-between;gap:.5rem;border-bottom:1px solid var(--ep-line);padding:.5rem 0}.ep-summary dd{margin:0}.ep-total{font-size:1.2rem;font-weight:700}.ep-hint{font-size:.85rem}.ep-summary .ep-text-link{margin-left:.6rem}
 .ep-shell :focus-visible{outline:3px solid #356f59;outline-offset:3px}
 @media(max-width:770px){.ep-hero,.ep-booking-grid{grid-template-columns:1fr}.ep-hero img{max-height:300px}.ep-summary{position:static}.ep-occasions{grid-template-columns:1fr}.ep-occasion img{aspect-ratio:2.2}.ep-shell{padding-top:1rem}}
+
+/* Readable controls and text across the customer flow */
+body{font-family:'DM Sans','Noto Sans Thai',sans-serif}
+.ep-dish-info,.ep-summary,.ep-category legend,.ep-order h1{color:#17352a}
+.ep-dish small,.ep-hint,.ep-order-heading p{color:#364e40}
+.ep-dish small,.ep-hint{font-size:.95rem}
+.ep-dish-info strong,.ep-total{font-weight:700}
+.ep-dish .form-check-input,.ep-summary .form-control{border-color:#657b6c}
+.ep-dish .form-check-input:checked{background-color:#20563e;border-color:#20563e}
+.ep-nav .dropdown-item{color:#fff7e7}
+.ep-nav .dropdown-item:hover,.ep-nav .dropdown-item:focus{color:#fff;background:#24533d}
+.ep-nav .dropdown-item.text-danger{color:#ffd0c8!important}
+.ep-nav .btn-outline-light{color:#fff8e8;border-color:#f4dfad}
+.ep-nav .btn-outline-light:hover{color:#19372b;background:#fff8e8}
+.login-card .btn-primary,.register-card .btn-primary{background:#19372b!important;border-color:#19372b!important;color:#fff}
+.login-card .btn-primary:hover,.register-card .btn-primary:hover{background:#28553e!important}
+.login-card .form-control::placeholder,.register-card .form-control::placeholder{opacity:1}
+.confirmation-card .btn-outline,.my-bookings-container .btn-outline{color:#19372b;border-color:#657b6c}

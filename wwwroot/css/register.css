@@ -29,7 +29,7 @@
 .login-card {
     width: 100%;
     max-width: 420px;
-    background: rgba(255, 255, 255, 0.03);
+    background: #fffdf8;
     backdrop-filter: blur(20px);
     border-radius: 24px;
     padding: 40px 35px;
@@ -40,7 +40,6 @@
         inset 0 1px 0 rgba(255, 255, 255, 0.05);
     position: relative;
     overflow: hidden;
-    animation: slideUp 0.6s ease-out;
 }
 
 @keyframes slideUp {
@@ -86,19 +85,15 @@
 .login-card .card-header h2,
 .register-card h4,
 .login-card h4 {
-    color: #f5f5f5;
+    color: #19372b;
     font-size: 28px;
     font-weight: 700;
     margin-bottom: 8px;
-    background: linear-gradient(135deg, #f5f5f5 0%, #d97706 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
 }
 
 .register-card .card-header p,
 .login-card .card-header p {
-    color: #aaa;
+    color: #495c50;
     font-size: 14px;
     margin: 0;
 }
@@ -114,7 +109,7 @@
 .register-card label,
 .login-card label {
     display: block;
-    color: #ffffff;
+    color: #20352c;
     font-size: 14px;
     font-weight: 500;
     margin-bottom: 8px;
@@ -125,10 +120,10 @@
 .login-card .form-control {
     width: 100%;
     padding: 14px 18px;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(217, 119, 6, 0.3);
+    background: #fffdf8;
+    border: 1px solid #788b7d;
     border-radius: 12px;
-    color: #ffffff;
+    color: #20352c;
     font-size: 15px;
     transition: all 0.3s ease;
     outline: none;
@@ -136,13 +131,13 @@
 
 .register-card .form-control::placeholder,
 .login-card .form-control::placeholder {
-    color: #aaa;
+    color: #495c50;
 }
 
 .register-card .form-control:focus,
 .login-card .form-control:focus {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: #d97706;
+    background: #fffdf8;
+    border-color: #24533d;
     box-shadow: 
         0 0 0 3px rgba(217, 119, 6, 0.1),
         0 0 20px rgba(217, 119, 6, 0.2);
@@ -202,16 +197,16 @@
 .register-card .btn-outline,
 .login-card .btn-outline {
     background: transparent;
-    border: 1px solid rgba(217, 119, 6, 0.3);
-    color: #ffffff;
+    border: 1px solid #788b7d;
+    color: #20352c;
     margin-top: 12px;
 }
 
 .register-card .btn-outline:hover,
 .login-card .btn-outline:hover {
     background: rgba(217, 119, 6, 0.1);
-    border-color: #d97706;
-    color: #f5f5f5;
+    border-color: #24533d;
+    color: #19372b;
     transform: translateY(-2px);
 }
 
@@ -220,7 +215,7 @@
     display: flex;
     align-items: center;
     margin: 28px 0;
-    color: #666;
+    color: #43554a;
     font-size: 13px;
 }
 
@@ -246,7 +241,7 @@
 
 .register-card a,
 .login-card a {
-    color: #d97706;
+    color: #24533d;
     text-decoration: none;
     transition: color 0.3s ease;
     font-weight: 500;
@@ -254,7 +249,7 @@
 
 .register-card a:hover,
 .login-card a:hover {
-    color: #f97316;
+    color: #19372b;
     text-decoration: underline;
 }
 
@@ -262,7 +257,7 @@
 .login-card .footer-text {
     text-align: center;
     margin-top: 24px;
-    color: #999;
+    color: #43554a;
     font-size: 14px;
 }
 
@@ -279,7 +274,7 @@
     height: 18px;
     margin-right: 10px;
     cursor: pointer;
-    accent-color: #d97706;
+    accent-color: #24533d;
 }
 
 .register-card .checkbox-group label,
@@ -287,7 +282,7 @@
     margin: 0;
     cursor: pointer;
     font-size: 14px;
-    color: #ddd;
+    color: #243b30;
 }
 
 /* Error state */
@@ -299,7 +294,7 @@
 
 .register-card .error-message,
 .login-card .error-message {
-    color: #fca5a5;
+    color: #8d2222;
     font-size: 13px;
     margin-top: 6px;
     display: flex;
