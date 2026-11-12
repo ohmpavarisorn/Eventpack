@@ -44,4 +44,11 @@ dd{margin:0;text-align:right;font-weight:600}
 .error:empty{display:none}
 .reservation-heading{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px}
 .status{border:1px solid var(--line);border-radius:30px;color:var(--gold);padding:3px 10px;font-size:13px}
+.role-tabs{display:flex;gap:8px;margin:4px 0 12px}
+.role-tabs button[aria-pressed=true]{color:#292314;background:var(--gold);border-color:var(--gold)}
+.admin-panel{margin:10px 0 14px}
+.admin-panel select{max-width:100%;color:inherit;background:#1c241b;border:1px solid var(--line);border-radius:5px;padding:7px;font:inherit}
+.admin-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;border-top:1px solid var(--line);margin-top:12px;padding-top:12px}
+.admin-row .admin-actions{display:flex;flex-wrap:wrap;gap:6px}
+.menu-edit{align-items:end;margin-bottom:8px}
 @media(max-width:670px){.wrap{width:calc(100% - 28px)}.hero,.layout{grid-template-columns:1fr}.hero{gap:14px}.hero img{max-height:185px;object-fit:cover;object-position:top}.menu label{font-size:13px}.topbar{min-height:55px}}
