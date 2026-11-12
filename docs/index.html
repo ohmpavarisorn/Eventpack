@@ -3,63 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#1b211b">
-  <title>EventPack · Catering Booking Demo</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="app.js" defer></script>
+  <meta http-equiv="refresh" content="0; url=https://eventpack-web.onrender.com/">
+  <link rel="canonical" href="https://eventpack-web.onrender.com/">
+  <title>EventPack</title>
 </head>
 <body>
-  <header class="wrap topbar"><a href="https://pavarisorn-coop-portfolio.minorebony5.chatgpt.site/#project/eventpack" data-copy="back">← กลับไปพอร์ต</a><span class="wordmark">EventPack</span><button id="language" type="button" lang="en">EN</button></header>
-  <main class="wrap">
-    <div class="hero">
-      <div class="intro"><p class="eyebrow" data-copy="demo">เดโมระบบจองจัดเลี้ยง</p><h1 data-copy="title">จัดเมนูสำหรับงานของคุณ</h1><p data-copy="description">เลือกอาหาร วันจัดงาน และจำนวนแขก ระบบจะคำนวณราคาก่อนสร้างรายการจองตัวอย่าง</p></div>
-      <img src="assets/eventpack-home.webp" alt="" width="1280" height="720">
-    </div>
-    <p class="demo-note" data-copy="notice">ข้อมูลตัวอย่างจะหายเมื่อโหลดหน้าใหม่ ไม่มีการจองหรือชำระเงินจริง</p>
-    <nav class="role-tabs" aria-label="EventPack demo roles">
-      <button type="button" data-role="customer" data-copy="customer" aria-pressed="true">ฝั่งลูกค้า</button>
-      <button type="button" data-role="admin" data-copy="admin" aria-pressed="false">ฝั่งผู้ดูแล</button>
-    </nav>
-    <div id="customer-view">
-    <form id="booking-form" class="layout">
-      <div class="panel">
-        <fieldset><legend data-copy="menu">เลือกเมนูอาหาร</legend><p class="muted" data-copy="menuHint">ราคาต่อคน เลือกได้หลายรายการ</p><div id="menu" class="menu"></div></fieldset>
-        <div class="fields">
-          <label><span data-copy="date">วันจัดงาน</span><input id="date" type="date" required></label>
-          <label><span data-copy="guests">จำนวนแขก</span><input id="guests" type="number" min="2" max="50" step="1" value="10" required></label>
-        </div>
-      </div>
-      <aside class="panel quote" aria-labelledby="quote-title">
-        <h2 id="quote-title" data-copy="quote">สรุปราคา</h2>
-        <dl><div><dt data-copy="perPerson">อาหารต่อคน</dt><dd id="per-person">—</dd></div><div><dt data-copy="food">ค่าอาหาร</dt><dd id="food">—</dd></div><div><dt data-copy="fee">ค่าดำเนินการ</dt><dd id="fee">—</dd></div><div class="total"><dt data-copy="total">ยอดรวม</dt><dd id="total" aria-live="polite">—</dd></div></dl>
-        <button class="primary" type="submit" data-copy="submit">สร้างรายการจองตัวอย่าง</button>
-        <p id="form-error" class="error" role="alert"></p>
-      </aside>
-    </form>
-    <section id="reservation" class="panel" hidden aria-labelledby="reservation-title">
-      <div class="reservation-heading"><h2 id="reservation-title" tabindex="-1" data-copy="reservation">รายการจองตัวอย่าง</h2><span id="status" class="status" role="status"></span></div>
-      <dl><div><dt data-copy="date">วันจัดงาน</dt><dd id="booked-date"></dd></div><div><dt data-copy="guests">จำนวนแขก</dt><dd id="booked-guests"></dd></div><div><dt data-copy="menu">เลือกเมนูอาหาร</dt><dd id="booked-menu"></dd></div><div class="total"><dt data-copy="total">ยอดรวม</dt><dd id="booked-total"></dd></div></dl>
-      <button id="cancel" type="button" data-copy="cancel">ยกเลิกรายการจองตัวอย่าง</button>
-    </section>
-    </div>
-    <section id="admin-view" hidden aria-labelledby="admin-title">
-      <div class="panel admin-panel">
-        <h2 id="admin-title" data-copy="adminBookings">จัดการการจอง</h2>
-        <label><span data-copy="filter">กรองสถานะ</span> <select id="admin-filter"><option value="all" data-copy="all">ทั้งหมด</option><option value="pending" data-copy="pending">รอการยืนยัน</option><option value="confirmed" data-copy="confirmed">ยืนยันแล้ว</option><option value="cancelled" data-copy="cancelled">ยกเลิกแล้ว</option></select></label>
-        <div id="admin-bookings"></div>
-      </div>
-      <div class="panel admin-panel">
-        <h2 data-copy="adminMenu">จัดการเมนูอาหาร</h2>
-        <form id="menu-form" class="fields menu-edit">
-          <label><span data-copy="editDish">เลือกเมนู</span><select id="edit-dish"></select></label>
-          <label><span data-copy="dishName">ชื่อเมนู</span><input id="dish-name" maxlength="100" required></label>
-          <label><span data-copy="dishCategory">หมวดหมู่</span><input id="dish-category" maxlength="50" required></label>
-          <label><span data-copy="dishPrice">ราคาต่อคน</span><input id="dish-price" type="number" min="0" max="100000" step="0.01" required></label>
-          <button type="submit" data-copy="saveDish">บันทึกเมนู</button>
-        </form>
-        <p id="menu-status" role="status"></p>
-      </div>
-    </section>
-  </main>
+  <p><a href="https://eventpack-web.onrender.com/">เปิดเว็บไซต์ EventPack / Open EventPack</a></p>
 </body>
 </html>
