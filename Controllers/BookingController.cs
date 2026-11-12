@@ -11,10 +11,13 @@ public class BookingController(Csi402projectContext db) : Controller
     private static readonly int[][] FeeTiers = [[2,10,5000],[11,20,9000],[21,35,12000],[36,50,18000],[60,80,35000],[81,200,50000]];
 
     [HttpGet]
-    public async Task<IActionResult> Create()
+    public async Task<IActionResult> Create(int guests = 6, bool resume = false)
     {
-        if (await CurrentCustomer() is not { } customer) return RedirectToAction("Login", "Account");
-        return await ShowForm(new BookingViewModel { EventLocation = customer.UserAddress, UserPhone = customer.UserPhone });
+        var customer = await CurrentCustomer();
+        ViewBag.GuestPreview = customer is null;
+        ViewBag.Resume = resume && customer is not null;
+        if (!FeeTiers.Any(tier => guests >= tier[0] && guests <= tier[1])) guests = 6;
+        return await ShowForm(new BookingViewModel { TotalGuests = guests, EventLocation = customer?.UserAddress, UserPhone = customer?.UserPhone });
     }
 
     [HttpPost, ValidateAntiForgeryToken]

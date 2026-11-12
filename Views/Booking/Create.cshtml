@@ -6,64 +6,103 @@
     ViewData["Title"] = "ออกแบบเมนูและจอง";
     var categories = (Dictionary<string, List<MenuItem>>)ViewBag.MenuItemsByCategory;
     var submitted = Context.Request.HasFormContentType ? Context.Request.Form : null;
+    var photos = new Dictionary<string, (string Name, string File)> { ["M001"] = ("ซูชิแซลมอน", "salmon"), ["M002"] = ("โรลแซลมอน", "roll"), ["M003"] = ("ซุปมิโซะ", "soup"), ["M004"] = ("สลัดผัก", "salad") };
+    var guestPreview = (bool?)ViewBag.GuestPreview == true;
 }
-<section class="container py-4">
-    <h1>ออกแบบเมนูของคุณ</h1>
-    <p>เลือกอาหาร ระบุจำนวนแขก และตรวจราคาก่อนส่งรายการให้ผู้ดูแลยืนยัน</p>
-    <form asp-controller="Booking" asp-action="Create" method="post" id="bookingForm">
+<section class="ep-shell ep-order">
+    <div class="ep-order-heading"><p class="ep-kicker">EVENTPACK · CATERING MENU</p><h1>จัดเมนูของคุณ</h1><p>เลือกอาหารและระบุจำนวนแขกเพื่อดูราคา</p></div>
+    <form asp-controller="Booking" asp-action="Create" method="post" id="bookingForm" data-preview="@guestPreview.ToString().ToLowerInvariant()" data-resume="@(((bool?)ViewBag.Resume == true).ToString().ToLowerInvariant())">
         <div asp-validation-summary="All" class="text-danger" role="alert"></div>
-        <div class="row g-4">
-            <div class="col-md-7">
+        <div class="ep-booking-grid">
+            <div>
                 @foreach (var category in categories)
                 {
-                    <fieldset class="border rounded p-3 mb-3">
-                        <legend class="h5">@category.Key</legend>
-                        @foreach (var item in category.Value)
-                        {
-                            var name = $"menu_{item.MenuItemId}";
-                            <label class="d-flex align-items-center gap-2 mb-2">
-                                <input type="checkbox" class="form-check-input menu-checkbox" name="@name" value="true" checked="@(submitted?.ContainsKey(name) == true)" data-price="@item.BasePrice.ToString(CultureInfo.InvariantCulture)" />
-                                @item.ItemName · ฿@item.BasePrice.ToString("N2") / คน
-                            </label>
-                        }
+                    <fieldset class="ep-category">
+                        <legend>@category.Key</legend>
+                        <div class="ep-dishes">
+                            @foreach (var item in category.Value)
+                            {
+                                var name = $"menu_{item.MenuItemId}";
+                                <label class="ep-dish">
+                                    @if (photos.TryGetValue(item.MenuItemId, out var photo) && item.ItemName == photo.Name)
+                                    {
+                                        <img src="@Url.Content($"~/images/restaurant/{photo.File}.webp")" alt="" width="500" height="500" loading="lazy" />
+                                    }
+                                    <span class="ep-dish-info">
+                                        <input type="checkbox" class="form-check-input menu-checkbox" name="@name" value="true" checked="@(submitted?.ContainsKey(name) == true)" data-price="@item.BasePrice.ToString(CultureInfo.InvariantCulture)" />
+                                        <span><strong>@item.ItemName</strong><small>฿@item.BasePrice.ToString("N2") / คน</small></span>
+                                    </span>
+                                </label>
+                            }
+                        </div>
                     </fieldset>
                 }
             </div>
-            <div class="col-md-5">
-                <div class="card p-3">
-                    <label asp-for="TotalGuests">จำนวนแขก</label>
-                    <input asp-for="TotalGuests" class="form-control mb-2" type="number" min="2" max="200" required />
+            <aside class="ep-summary">
+                <h2>สรุปการจอง</h2>
+                <label asp-for="TotalGuests">จำนวนแขก</label>
+                <input asp-for="TotalGuests" class="form-control" type="number" min="2" max="200" required aria-describedby="guestHint" />
+                <p class="ep-hint" id="guestHint">2–50 หรือ 60–200 คน</p>
+                @if (!guestPreview)
+                {
                     <label asp-for="EventDate">วันจัดงาน</label>
-                    <input asp-for="EventDate" class="form-control mb-2" type="date" min="@DateTime.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)" required />
+                    <input asp-for="EventDate" class="form-control" type="date" min="@DateTime.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)" required />
                     <label asp-for="EventLocation">สถานที่จัดงาน</label>
-                    <textarea asp-for="EventLocation" class="form-control mb-2" maxlength="255" required></textarea>
+                    <textarea asp-for="EventLocation" class="form-control" maxlength="255" required></textarea>
                     <label asp-for="UserPhone">เบอร์ติดต่อ</label>
-                    <input asp-for="UserPhone" class="form-control mb-3" type="tel" maxlength="15" required />
-                    <dl class="row mb-2">
-                        <dt class="col-7">ค่าอาหาร</dt><dd id="menuPrice" class="col-5 text-end">—</dd>
-                        <dt class="col-7">ค่าดำเนินการ</dt><dd id="operationFee" class="col-5 text-end">—</dd>
-                        <dt class="col-7">ยอดรวม</dt><dd id="totalPrice" class="col-5 text-end fw-bold" aria-live="polite">—</dd>
-                    </dl>
-                    <p class="small">รับจอง 2–50 หรือ 60–200 คน เว็บไซต์พอร์ตใช้ข้อมูลตัวอย่างและไม่มีการรับชำระเงิน</p>
-                    <button class="btn btn-primary" type="submit">ส่งรายการจอง</button>
-                </div>
-            </div>
+                    <input asp-for="UserPhone" class="form-control" type="tel" maxlength="15" required />
+                }
+                <dl>
+                    <div><dt>ค่าอาหาร</dt><dd id="menuPrice">—</dd></div>
+                    <div><dt>ค่าดำเนินการ</dt><dd id="operationFee">—</dd></div>
+                    <div class="ep-total"><dt>ยอดรวม</dt><dd id="totalPrice" aria-live="polite">—</dd></div>
+                </dl>
+                <p class="ep-hint" id="quoteHint">เลือกอาหารเพื่อดูยอดรวม</p>
+                @if (guestPreview)
+                {
+                    <a class="ep-button" asp-controller="Account" asp-action="Login" asp-route-returnToBooking="true">เข้าสู่ระบบเพื่อจอง</a>
+                    <a class="ep-text-link" asp-controller="Account" asp-action="Register" asp-route-returnToBooking="true">สมัครบัญชีลูกค้า</a>
+                }
+                else
+                {
+                    <p class="ep-hint">ส่งรายการให้ผู้ดูแลยืนยัน ไม่มีการชำระเงินบนเว็บ</p>
+                    <button class="ep-button" type="submit">ส่งรายการจอง</button>
+                }
+            </aside>
         </div>
     </form>
 </section>
 <script>
     const form = document.getElementById('bookingForm');
     const tiers = @Html.Raw(JsonSerializer.Serialize((int[][])ViewBag.FeeTiers));
+    const guestsInput = document.getElementById('TotalGuests');
     const currency = new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' });
+    const checkboxes = [...form.querySelectorAll('.menu-checkbox')];
+    const draftKey = 'eventpack-menu-draft';
     function updateQuote() {
-        const guests = document.getElementById('TotalGuests').valueAsNumber;
+        const guests = guestsInput.valueAsNumber;
         const tier = tiers.find(([min, max]) => guests >= min && guests <= max);
-        const items = [...form.querySelectorAll('.menu-checkbox:checked')];
+        const items = checkboxes.filter(item => item.checked);
         const subtotal = items.reduce((sum, item) => sum + Number(item.dataset.price), 0) * guests;
         document.getElementById('menuPrice').textContent = tier && items.length ? currency.format(subtotal) : '—';
         document.getElementById('operationFee').textContent = tier ? currency.format(tier[2]) : '—';
         document.getElementById('totalPrice').textContent = tier && items.length ? currency.format(subtotal + tier[2]) : '—';
+        document.getElementById('quoteHint').textContent = !tier ? 'กรุณาระบุจำนวนแขกตามช่วงที่รองรับ' : items.length ? 'เลือกแล้ว ' + items.length + ' เมนู' : 'เลือกอาหารเพื่อดูยอดรวม';
+        if (form.dataset.preview === 'true') {
+            try { sessionStorage.setItem(draftKey, JSON.stringify({ guests: guestsInput.value, items: items.map(item => item.name) })); } catch {}
+        }
     }
+    if (form.dataset.resume === 'true') {
+        try {
+            const draft = JSON.parse(sessionStorage.getItem(draftKey));
+            if (draft) {
+                guestsInput.value = draft.guests;
+                checkboxes.forEach(item => item.checked = draft.items.includes(item.name));
+                sessionStorage.removeItem(draftKey);
+            }
+        } catch {}
+    }
+    if (form.dataset.preview === 'true') form.addEventListener('submit', event => event.preventDefault());
     form.addEventListener('input', updateQuote);
     updateQuote();
 </script>

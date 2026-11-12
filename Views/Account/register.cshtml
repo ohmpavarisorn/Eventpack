@@ -19,7 +19,7 @@
                 </div>
             }
 
-            <form asp-controller="Account" asp-action="register" method="post">
+            <form asp-controller="Account" asp-action="register" asp-route-returnToBooking="@((bool?)ViewBag.ReturnToBooking == true)" method="post">
                 <div class="mb-3">
                     <label for="name" class="form-label">ชื่อผู้ใช้ <span class="text-danger">*</span></label>
                     <input type="text" class="form-control" id="name" name="Name" placeholder="เลือกชื่อผู้ใช้" maxlength="10" required>
@@ -55,7 +55,7 @@
             </form>
 
             <div class="footer-text">
-                มีบัญชีแล้ว? <a asp-controller="Account" asp-action="Login">เข้าสู่ระบบที่นี่</a>
+                มีบัญชีแล้ว? <a asp-controller="Account" asp-action="Login" asp-route-returnToBooking="@((bool?)ViewBag.ReturnToBooking == true)">เข้าสู่ระบบที่นี่</a>
             </div>
 
         </div>

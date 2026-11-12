@@ -8,7 +8,7 @@
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
                     <strong>❌ เข้าสู่ระบบล้มเหลว</strong><br>
                     @ViewBag.ErrorMessage
-                    <a asp-controller="Account" asp-action="Register" class="alert-link">คลิกที่นี่เพื่อสมัครสมาชิก</a>
+                    <a asp-controller="Account" asp-action="Register" asp-route-returnToBooking="@((bool?)ViewBag.ReturnToBooking == true)" class="alert-link">คลิกที่นี่เพื่อสมัครสมาชิก</a>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             }
@@ -36,7 +36,7 @@
                 </div>
             }
 
-            <form asp-controller="Account" asp-action="Login" method="post">
+            <form asp-controller="Account" asp-action="Login" asp-route-returnToBooking="@((bool?)ViewBag.ReturnToBooking == true)" method="post">
                 <div class="mb-3">
                     <label for="Name" class="form-label">ชื่อผู้ใช้</label>
                     <input type="text" class="form-control" id="Name" name="Name" placeholder="กรุณาใส่ชื่อผู้ใช้" required>
@@ -55,7 +55,7 @@
             </form>
 
             <div class="footer-text" style="text-align: center; margin-top: 20px; color: #999;">
-                ยังไม่มีบัญชี? <a asp-controller="Account" asp-action="Register" style="color: #d97706; text-decoration: none; font-weight: 600;">สมัครสมาชิก</a>
+                ยังไม่มีบัญชี? <a asp-controller="Account" asp-action="Register" asp-route-returnToBooking="@((bool?)ViewBag.ReturnToBooking == true)" style="color: #d97706; text-decoration: none; font-weight: 600;">สมัครสมาชิก</a>
             </div>
         </div>
     </div>

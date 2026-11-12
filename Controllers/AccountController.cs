@@ -10,11 +10,16 @@ namespace EventPack.Controllers;
 public class AccountController(Csi402projectContext db, IPasswordHasher<Userinformation> passwords, IConfiguration config) : Controller
 {
     [HttpGet]
-    public IActionResult Register() => View();
+    public IActionResult Register(bool returnToBooking = false)
+    {
+        ViewBag.ReturnToBooking = returnToBooking;
+        return View();
+    }
 
     [HttpPost, ValidateAntiForgeryToken]
-    public async Task<IActionResult> Register(string? name, string? password, string? confirmPassword, string? phone, string? address)
+    public async Task<IActionResult> Register(string? name, string? password, string? confirmPassword, string? phone, string? address, bool returnToBooking = false)
     {
+        ViewBag.ReturnToBooking = returnToBooking;
         name = name?.Trim();
         if (string.IsNullOrWhiteSpace(name) || name.Length > 10 || password is null ||
             password.Length is < 8 or > 128 || password != confirmPassword || phone?.Length > 15 || address?.Length > 255)
@@ -38,15 +43,20 @@ public class AccountController(Csi402projectContext db, IPasswordHasher<Userinfo
             return View();
         }
         TempData["SuccessMessage"] = "สร้างบัญชีสำเร็จ กรุณาเข้าสู่ระบบ";
-        return RedirectToAction(nameof(Login));
+        return RedirectToAction(nameof(Login), new { returnToBooking });
     }
 
     [HttpGet]
-    public IActionResult Login() => View();
+    public IActionResult Login(bool returnToBooking = false)
+    {
+        ViewBag.ReturnToBooking = returnToBooking;
+        return View();
+    }
 
     [HttpPost, ValidateAntiForgeryToken]
-    public async Task<IActionResult> Login(string? name, string? password)
+    public async Task<IActionResult> Login(string? name, string? password, bool returnToBooking = false)
     {
+        ViewBag.ReturnToBooking = returnToBooking;
         if (string.IsNullOrWhiteSpace(name) || string.IsNullOrEmpty(password) || password.Length > 128)
             return InvalidLogin();
 
@@ -70,7 +80,8 @@ public class AccountController(Csi402projectContext db, IPasswordHasher<Userinfo
         HttpContext.Session.SetString("UserId", user.UserId);
         HttpContext.Session.SetString("FullName", user.FullName ?? user.UserId);
         HttpContext.Session.SetString("Role", isAdmin ? "admin" : "customer");
-        return isAdmin ? RedirectToAction("Index", "Admin") : RedirectToAction("Index", "Home");
+        if (isAdmin) return RedirectToAction("Index", "Admin");
+        return returnToBooking ? RedirectToAction("Create", "Booking", new { resume = true }) : RedirectToAction("Index", "Home");
     }
 
     [HttpPost, ValidateAntiForgeryToken]

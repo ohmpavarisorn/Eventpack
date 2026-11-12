@@ -1,114 +1,33 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
-    
+@{
+    ViewData["Title"] = "จัดเลี้ยง";
+    var occasions = new[] {
+        ("โต๊ะสำหรับครอบครัว", "2–10 คน", "มื้อพิเศษกับคนใกล้ตัว", 6, "salmon"),
+        ("งานเลี้ยงกลุ่ม", "11–35 คน", "วันเกิด งานเลี้ยงบริษัท หรืองานสังสรรค์", 20, "roll"),
+        ("งานเลี้ยงขนาดใหญ่", "36–50 หรือ 60–200 คน", "ออกแบบเมนูสำหรับแขกหลายโต๊ะ", 60, "salad")
+    };
 }
-@using EventPack.Models.Db;
-
-<!-- Hero Section -->
-<div class="hero-section">
-    <div class="hero-content">
-        <h1 class="hero-title">Welcome to EventPack!</h1>
-        <p class="hero-subtitle">Your one-stop solution for event management</p>
-        <p class="hero-description">Choose the perfect package for your event and let us handle the rest</p>
-    </div>
-</div>
-
-<!-- Packages Section -->
-<div class="packages-container">
-    <div class="section-header">
-        <h2 class="section-title">Our Packages</h2>
-        <p class="section-description">Select a package that fits your event size</p>
-    </div>
-
-    <div class="packages-grid">
-        <!-- Mini Pack -->
-        <div class="package-card mini-pack">
-            <div class="package-header">
-                <h3 class="package-name">Mini Pack</h3>
-                <span class="package-size">2-6 People</span>
-            </div>
-            <div class="package-icon">🎉</div>
-            <div class="package-details">
-                <p class="package-description">Perfect for intimate family gatherings and small celebrations</p>
-                <ul class="package-features">
-                    <li>✓ Small venue setup</li>
-                    <li>✓ Basic decorations</li>
-                    <li>✓ Simple catering</li>
-                    
-                </ul>
-            </div>
-            <div class="package-footer">
-                <div class="package-price">Starting from</div>
-                <div class="price">฿ 5,000</div>
-                <a asp-controller="Booking" asp-action="Create" class="btn-book">Book Now</a>
-            </div>
+<div class="ep-shell">
+    <section class="ep-hero">
+        <div class="ep-hero-copy">
+            <p class="ep-kicker">EVENTPACK · CATERING</p>
+            <h1>อาหารดี ๆ<br>สำหรับทุกงานเลี้ยง</h1>
+            <p>เลือกเมนูตามใจ กำหนดจำนวนแขก แล้วดูราคาจัดเลี้ยงก่อนส่งคำขอจอง</p>
+            <a class="ep-button" asp-controller="Booking" asp-action="Create">จัดเมนูและดูราคา <span aria-hidden="true">↗</span></a>
+            <a class="ep-link" href="#occasions">ดูขนาดงาน</a>
         </div>
-
-        <!-- M Size -->
-        <div class="package-card medium-pack">
-            <div class="package-header">
-                <h3 class="package-name">M Size</h3>
-                <span class="package-size">10-25 People</span>
-            </div>
-            <div class="package-icon">🎊</div>
-            <div class="package-details">
-                <p class="package-description">Ideal for office parties and medium-sized celebrations</p>
-                <ul class="package-features">
-                    <li>✓ จัดบูธอาหาร</li>
-                    <li>✓ Buffet catering</li>
-                    <li>✓ Professional chef</li>
-        
-                </ul>
-            </div>
-            <div class="package-footer">
-                <div class="package-price">Starting from</div>
-                <div class="price">฿ 15,000</div>
-                <a asp-controller="Booking" asp-action="Create" class="btn-book">Book Now</a>
-            </div>
+        <img src="~/images/restaurant/table.webp" alt="โต๊ะจัดเลี้ยงพร้อมซูชิและอาหารหลายจาน" width="1440" height="960" fetchpriority="high" />
+    </section>
+    <section id="occasions" class="ep-section">
+        <h2>จัดโต๊ะให้เหมาะกับงาน</h2>
+        <div class="ep-occasions">
+            @foreach (var (title, size, description, guests, photo) in occasions)
+            {
+                <article class="ep-occasion">
+                    <img src="@Url.Content($"~/images/restaurant/{photo}.webp")" alt="" width="500" height="500" loading="lazy" />
+                    <div><p class="ep-kicker">@size</p><h3>@title</h3><p>@description</p>
+                    <a class="ep-text-link" asp-controller="Booking" asp-action="Create" asp-route-guests="@guests">เลือกเมนู <span aria-hidden="true">↗</span></a></div>
+                </article>
+            }
         </div>
-
-        <!-- L Size -->
-        <div class="package-card large-pack">
-            <div class="package-header">
-                <h3 class="package-name">L Size</h3>
-                <span class="package-size">30-50 People</span>
-            </div>
-            <div class="package-icon">🎈</div>
-            <div class="package-details">
-                <p class="package-description">Great for weddings and large corporate events</p>
-                <ul class="package-features">
-                    <li>✓ Large venue rental</li>
-                    <li>✓ Premium decorations</li>
-                    <li>✓ Professional chef</li>
-                </ul>
-            </div>
-            <div class="package-footer">
-                <div class="package-price">Starting from</div>
-                <div class="price">฿ 40,000</div>
-                <a asp-controller="Booking" asp-action="Create" class="btn-book">Book Now</a>
-            </div>
-        </div>
-
-        <!-- XL Size -->
-        <div class="package-card xlarge-pack">
-            <div class="package-header">
-                <h3 class="package-name">XL Size</h3>
-                <span class="package-size">50+ People</span>
-            </div>
-            <div class="package-icon">✨</div>
-            <div class="package-details">
-                <p class="package-description">Premium package for grand celebrations and major events</p>
-                <ul class="package-features">
-                    <li>✓ Grand venue with setup</li>
-                    <li>✓ Luxury decorations</li>
-                    <li>✓ Professional chef</li>
-                </ul>
-            </div>
-            <div class="package-footer">
-                <div class="package-price">Starting from</div>
-                <div class="price">฿ 80,000</div>
-                <a asp-controller="Booking" asp-action="Create" class="btn-book">Book Now</a>
-            </div>
-        </div>
-    </div>
+    </section>
 </div>
