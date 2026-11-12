@@ -105,10 +105,13 @@
                     </div>
 
                     <div class="booking-card-footer">
-                        <a href="#" class="btn-text">ดูรายละเอียด</a>
+                        <a asp-action="Confirmation" asp-route-bookingId="@booking.BookingId" class="btn-text">ดูรายละเอียด</a>
                         @if (booking.BookingStatus == "pending")
                         {
-                            <button class="btn-text danger">ยกเลิกการจอง</button>
+                            <form asp-action="Cancel" method="post">
+                                <input type="hidden" name="bookingId" value="@booking.BookingId" />
+                                <button class="btn-text danger" type="submit">ยกเลิกการจอง</button>
+                            </form>
                         }
                     </div>
                 </div>

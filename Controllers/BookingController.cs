@@ -1,364 +1,117 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using EventPack.Models.Db;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Security.Cryptography;
 using System.Text.Json;
-namespace EventPack.Controllers
+using EventPack.Models.Db;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace EventPack.Controllers;
+
+public class BookingController(Csi402projectContext db) : Controller
 {
-    public class BookingController : Controller
+    private static readonly int[][] FeeTiers = [[2,10,5000],[11,20,9000],[21,35,12000],[36,50,18000],[60,80,35000],[81,200,50000]];
+
+    [HttpGet]
+    public async Task<IActionResult> Create()
     {
-        private readonly Csi402projectContext _context;
+        if (await CurrentCustomer() is not { } customer) return RedirectToAction("Login", "Account");
+        return await ShowForm(new BookingViewModel { EventLocation = customer.UserAddress, UserPhone = customer.UserPhone });
+    }
 
-        public BookingController(Csi402projectContext context)
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(BookingViewModel model)
+    {
+        if (await CurrentCustomer() is not { } customer) return RedirectToAction("Login", "Account");
+        var menuIds = Request.Form.Keys.Where(key => key.StartsWith("menu_") && !key.StartsWith("menu_qty_"))
+            .Select(key => key[5..]).ToList();
+        var menu = await db.MenuItems.Where(item => menuIds.Contains(item.MenuItemId)).ToListAsync();
+        if (menu.Count == 0 || menu.Count != menuIds.Count)
+            ModelState.AddModelError("", "กรุณาเลือกอาหารจากเมนูอย่างน้อยหนึ่งรายการ");
+        var tier = FeeTiers.FirstOrDefault(value => model.TotalGuests >= value[0] && model.TotalGuests <= value[1]);
+        if (tier is null) ModelState.AddModelError("", "ระบบรองรับจำนวนแขก 2–50 หรือ 60–200 คน");
+        if (model.EventDate is null || model.EventDate.Value.Date < DateTime.Today)
+            ModelState.AddModelError("", "กรุณาเลือกวันจัดงานตั้งแต่วันนี้เป็นต้นไป");
+        if (string.IsNullOrWhiteSpace(model.EventLocation) || model.EventLocation.Length > 255 ||
+            string.IsNullOrWhiteSpace(model.UserPhone) || model.UserPhone.Length > 15)
+            ModelState.AddModelError("", "กรุณากรอกสถานที่จัดงานและเบอร์ติดต่อ");
+        if (!ModelState.IsValid) return await ShowForm(model);
+
+        var pricePerPerson = menu.Sum(item => item.BasePrice);
+        var operationFee = tier![2];
+        var totalMenuPrice = pricePerPerson * model.TotalGuests;
+        var booking = new Booking
         {
-            _context = context;
-        }
+            BookingId = Convert.ToHexString(RandomNumberGenerator.GetBytes(5)),
+            UserId = customer.UserId,
+            TotalGuests = model.TotalGuests,
+            EventLocation = model.EventLocation!.Trim(),
+            EventDate = model.EventDate,
+            TotalPrice = totalMenuPrice + operationFee,
+            MenuItemsJson = JsonSerializer.Serialize(new { items = menu.Select(item => item.ItemName), pricePerPerson, operationFee, totalMenuPrice }),
+            BookingStatus = "pending",
+            CreatedDate = DateTime.UtcNow
+        };
+        customer.UserPhone = model.UserPhone!.Trim();
+        db.Bookings.Add(booking);
+        await db.SaveChangesAsync();
+        return RedirectToAction(nameof(Confirmation), new { bookingId = booking.BookingId });
+    }
 
-        // GET: Booking/Create
-        public async Task<IActionResult> Create()
-        {
-            // Try to get menu items from database, if table doesn't exist return empty
-            Dictionary<string, List<MenuItem>>? menuItems = null;
-            try
-            {
-                menuItems = await _context.MenuItems
-                    .GroupBy(m => m.Category)
-                    .ToDictionaryAsync(g => g.Key, g => g.ToList());
-                Console.WriteLine($"✓ MenuItems Count: {menuItems?.Count ?? 0}");
-            }
-            catch (Exception ex)
-            {
-                // MenuItems table doesn't exist yet, use empty
-                Console.WriteLine($"✗ Error loading menuitems: {ex.Message}");
-                menuItems = new Dictionary<string, List<MenuItem>>();
-            }
+    [HttpGet]
+    public async Task<IActionResult> Confirmation(string bookingId)
+    {
+        if (await CurrentCustomer() is not { } customer) return RedirectToAction("Login", "Account");
+        var booking = await db.Bookings.FirstOrDefaultAsync(b => b.BookingId == bookingId && b.UserId == customer.UserId);
+        if (booking is null) return NotFound();
+        ViewBag.UserInfo = customer;
+        return View(booking);
+    }
 
-            ViewBag.MenuItemsByCategory = menuItems;
+    [HttpGet]
+    public async Task<IActionResult> MyBookings()
+    {
+        if (await CurrentCustomer() is not { } customer) return RedirectToAction("Login", "Account");
+        return View(await db.Bookings.Where(b => b.UserId == customer.UserId).OrderByDescending(b => b.CreatedDate).ToListAsync());
+    }
 
-            // Get current user info if available
-            var userId = HttpContext.Session.GetString("UserId");
-            if (!string.IsNullOrEmpty(userId))
-            {
-                var userInfo = await _context.Userinformations.FirstOrDefaultAsync(u => u.UserId == userId);
-                if (userInfo != null)
-                {
-                    ViewBag.UserPhone = userInfo.UserPhone;
-                    ViewBag.UserAddress = userInfo.UserAddress;
-                    ViewBag.FullName = userInfo.FullName;
-                    ViewBag.UserId = userId;
-                }
-            }
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> Cancel(string bookingId)
+    {
+        if (await CurrentCustomer() is not { } customer) return RedirectToAction("Login", "Account");
+        var updated = await db.Bookings.Where(b => b.BookingId == bookingId && b.UserId == customer.UserId && b.BookingStatus == "pending")
+            .ExecuteUpdateAsync(values => values.SetProperty(b => b.BookingStatus, "cancelled"));
+        if (updated == 0) return NotFound();
+        return RedirectToAction(nameof(MyBookings));
+    }
 
-            return View();
-        }
+    [HttpGet]
+    public async Task<IActionResult> GetMenuItemsByCategory(string category) => Json(new
+    {
+        success = true,
+        items = await db.MenuItems.Where(m => m.Category == category).OrderBy(m => m.ItemName)
+            .Select(m => new { id = m.MenuItemId, name = m.ItemName, price = m.BasePrice }).ToListAsync()
+    });
 
-        // POST: Booking/Create
-        [HttpPost]
-        public async Task<IActionResult> Create(
-            [Bind("TotalGuests,EventLocation,EventDate,UserPhone")] BookingViewModel model)
-        {
-            try
-            {
-                var userId = HttpContext.Session.GetString("UserId");
-                Console.WriteLine($"📝 BookingCreate POST - UserId: {userId}");
-                
-                if (string.IsNullOrEmpty(userId))
-                {
-                    Console.WriteLine("❌ No UserId in session");
-                    ModelState.AddModelError("", "กรุณาเข้าสู่ระบบก่อน");
-                    return RedirectToAction("Login", "Account");
-                }
+    [HttpPost]
+    public async Task<IActionResult> CalculatePrice([FromBody] Dictionary<string, int> selectedItems)
+    {
+        if (selectedItems is null || selectedItems.Values.Any(quantity => quantity is < 1 or > 200)) return BadRequest();
+        var ids = selectedItems.Keys.ToList();
+        var items = await db.MenuItems.Where(m => ids.Contains(m.MenuItemId)).ToListAsync();
+        if (items.Count != ids.Count || items.Any(item => !selectedItems.ContainsKey(item.MenuItemId))) return BadRequest();
+        return Json(new { success = true, totalPrice = items.Sum(item => item.BasePrice * selectedItems[item.MenuItemId]) });
+    }
 
-                // Get selected menu items from checkboxes
-                var selectedMenuIds = new List<string>();
-                var formKeys = HttpContext.Request.Form.Keys;
-                
-                foreach (var key in formKeys)
-                {
-                    if (key.StartsWith("menu_") && !key.StartsWith("menu_qty_"))
-                    {
-                        var menuItemId = key.Replace("menu_", "");
-                        selectedMenuIds.Add(menuItemId);
-                    }
-                }
+    private async Task<Userinformation?> CurrentCustomer()
+    {
+        var id = HttpContext.Session.GetString("UserId");
+        return id is null || HttpContext.Session.GetString("Role") != "customer" ? null : await db.Userinformations.FindAsync(id);
+    }
 
-                // Validate that at least one menu item is selected
-                if (selectedMenuIds.Count == 0)
-                {
-                    Console.WriteLine("❌ No menu items selected");
-                    ModelState.AddModelError("", "กรุณาเลือกเมนูอาหารอย่างน้อยหนึ่งรายการ");
-                    Dictionary<string, List<MenuItem>>? menuItems = null;
-                    try
-                    {
-                        menuItems = await _context.MenuItems
-                            .GroupBy(m => m.Category)
-                            .ToDictionaryAsync(g => g.Key, g => g.ToList());
-                    }
-                    catch { menuItems = new Dictionary<string, List<MenuItem>>(); }
-                    ViewBag.MenuItemsByCategory = menuItems;
-                    return View(model);
-                }
-
-                Console.WriteLine($"📋 Selected menu items: {string.Join(", ", selectedMenuIds)}");
-
-                // Validate total guests
-                if (model.TotalGuests < 2)
-                {
-                    Console.WriteLine($"❌ TotalGuests validation failed: {model.TotalGuests}");
-                    ModelState.AddModelError("TotalGuests", "จำนวนคนต้องมากกว่า 1 คน");
-                    Dictionary<string, List<MenuItem>>? menuItems = null;
-                    try
-                    {
-                        menuItems = await _context.MenuItems
-                            .GroupBy(m => m.Category)
-                            .ToDictionaryAsync(g => g.Key, g => g.ToList());
-                    }
-                    catch { menuItems = new Dictionary<string, List<MenuItem>>(); }
-                    ViewBag.MenuItemsByCategory = menuItems;
-                    return View(model);
-                }
-
-                Console.WriteLine($"✓ TotalGuests: {model.TotalGuests}");
-
-                // Calculate price per person from selected items
-                decimal pricePerPerson = 0;
-                var menuItemDetails = new Dictionary<string, decimal>();
-                
-                try
-                {
-                    foreach (var menuItemId in selectedMenuIds)
-                    {
-                        var menuItem = await _context.MenuItems.FindAsync(menuItemId);
-                        if (menuItem != null)
-                        {
-                            pricePerPerson += menuItem.BasePrice;
-                            menuItemDetails[menuItemId] = menuItem.BasePrice;
-                        }
-                    }
-                }
-                catch
-                {
-                    // MenuItems table doesn't exist, use default pricing
-                    pricePerPerson = 100 * selectedMenuIds.Count;
-                }
-
-                // Calculate total price: (price per person × guests) + operation fee
-                decimal totalMenuPrice = pricePerPerson * model.TotalGuests;
-                decimal operationFee = GetOperationFee(model.TotalGuests);
-                decimal totalPrice = totalMenuPrice + operationFee;
-
-                // Update user info if provided
-                var userInfo = await _context.Userinformations.FirstOrDefaultAsync(u => u.UserId == userId);
-                if (userInfo != null)
-                {
-                    if (!string.IsNullOrEmpty(model.UserPhone))
-                        userInfo.UserPhone = model.UserPhone;
-                    if (!string.IsNullOrEmpty(model.EventLocation))
-                        userInfo.UserAddress = model.EventLocation;
-                }
-
-                // Create menu items JSON
-                var menuItemsJson = JsonSerializer.Serialize(new
-                {
-                    items = selectedMenuIds,
-                    pricePerPerson = pricePerPerson,
-                    operationFee = operationFee,
-                    totalMenuPrice = totalMenuPrice
-                });
-
-                // Create booking
-                var booking = new Booking
-                {
-                    BookingId = GenerateBookingId(),
-                    UserId = userId,
-                    TotalGuests = model.TotalGuests,
-                    EventLocation = model.EventLocation ?? "",
-                    EventDate = model.EventDate,
-                    TotalPrice = totalPrice,
-                    MenuItemsJson = menuItemsJson,
-                    BookingStatus = "pending",
-                    CreatedDate = DateTime.Now
-                };
-
-                Console.WriteLine($"📋 Booking object created:");
-                Console.WriteLine($"  - BookingId: {booking.BookingId}");
-                Console.WriteLine($"  - UserId: {booking.UserId}");
-                Console.WriteLine($"  - TotalGuests: {booking.TotalGuests}");
-                Console.WriteLine($"  - EventLocation: {booking.EventLocation}");
-                Console.WriteLine($"  - TotalPrice: {booking.TotalPrice}");
-                Console.WriteLine($"  - EventDate: {booking.EventDate}");
-                Console.WriteLine($"  - MenuItemsJson: {booking.MenuItemsJson}");
-
-                _context.Bookings.Add(booking);
-                
-                try
-                {
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateException dbEx)
-                {
-                    Console.WriteLine($"❌ DbUpdateException: {dbEx.Message}");
-                    if (dbEx.InnerException != null)
-                    {
-                        Console.WriteLine($"❌ Inner: {dbEx.InnerException.Message}");
-                    }
-                    throw;
-                }
-                
-                Console.WriteLine($"✅ Booking saved successfully: {booking.BookingId}");
-                return RedirectToAction("Confirmation", new { bookingId = booking.BookingId });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Exception in Create: {ex.Message}");
-                Console.WriteLine($"Stack: {ex.StackTrace}");
-                
-                // Log inner exceptions
-                var innerEx = ex.InnerException;
-                int level = 1;
-                while (innerEx != null)
-                {
-                    Console.WriteLine($"Inner Exception {level}: {innerEx.Message}");
-                    Console.WriteLine($"Inner Stack {level}: {innerEx.StackTrace}");
-                    innerEx = innerEx.InnerException;
-                    level++;
-                }
-                
-                string errorMsg = ex.Message;
-                if (ex.InnerException != null)
-                {
-                    errorMsg = $"{ex.Message} - {ex.InnerException.Message}";
-                }
-                
-                ModelState.AddModelError("", $"เกิดข้อผิดพลาด: {errorMsg}");
-                Dictionary<string, List<MenuItem>>? menuItems = null;
-                try
-                {
-                    menuItems = await _context.MenuItems
-                        .GroupBy(m => m.Category)
-                        .ToDictionaryAsync(g => g.Key, g => g.ToList());
-                }
-                catch { menuItems = new Dictionary<string, List<MenuItem>>(); }
-                ViewBag.MenuItemsByCategory = menuItems;
-                return View(model);
-            }
-        }
-
-        // GET: Booking/Confirmation
-        public async Task<IActionResult> Confirmation(string bookingId)
-        {
-            var booking = await _context.Bookings
-                .FirstOrDefaultAsync(b => b.BookingId == bookingId);
-
-            if (booking == null)
-            {
-                return RedirectToAction("Create");
-            }
-
-            var userInfo = await _context.Userinformations.FirstOrDefaultAsync(u => u.UserId == booking.UserId);
-            ViewBag.UserInfo = userInfo;
-
-            return View(booking);
-        }
-
-        // GET: Booking/MyBookings
-        public async Task<IActionResult> MyBookings()
-        {
-            var userId = HttpContext.Session.GetString("UserId");
-            if (string.IsNullOrEmpty(userId))
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
-            var bookings = await _context.Bookings
-                .Where(b => b.UserId == userId)
-                .ToListAsync();
-
-            return View(bookings);
-        }
-
-        private string GenerateBookingId()
-        {
-            // Format: BK + timestamp + random
-            var timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
-            var random = new Random().Next(100, 999);
-            return $"BK{timestamp}{random}".Substring(0, 15);
-        }
-
-        // API: Get menu items by category
-        [HttpGet]
-        public async Task<IActionResult> GetMenuItemsByCategory(string category)
-        {
-            try
-            {
-                var items = await _context.MenuItems
-                    .Where(m => m.Category == category)
-                    .OrderBy(m => m.ItemName)
-                    .ToListAsync();
-
-                return Json(new
-                {
-                    success = true,
-                    items = items.Select(i => new
-                    {
-                        id = i.MenuItemId,
-                        name = i.ItemName,
-                        price = i.BasePrice
-                    })
-                });
-            }
-            catch
-            {
-                return Json(new { success = false, items = new List<object>() });
-            }
-        }
-
-        // API: Calculate total price
-        [HttpPost]
-        public async Task<IActionResult> CalculatePrice([FromBody] Dictionary<string, int> selectedItems)
-        {
-            try
-            {
-                decimal totalPrice = 0;
-                
-                foreach (var item in selectedItems)
-                {
-                    var menuItem = await _context.MenuItems.FindAsync(item.Key);
-                    if (menuItem != null)
-                    {
-                        totalPrice += menuItem.BasePrice * item.Value;
-                    }
-                }
-
-                return Json(new
-                {
-                    success = true,
-                    totalPrice = totalPrice
-                });
-            }
-            catch
-            {
-                return Json(new { success = false, totalPrice = 0 });
-            }
-        }
-
-        // Helper method to calculate operation fee based on guest count
-        private decimal GetOperationFee(int guestCount)
-        {
-            return guestCount switch
-            {
-                >= 2 and <= 10 => 5000,
-                >= 11 and <= 20 => 9000,
-                >= 21 and <= 35 => 12000,
-                >= 36 and <= 50 => 18000,
-                >= 60 and <= 80 => 35000,
-                >= 81 => 50000,
-                _ => 0
-            };
-        }
+    private async Task<IActionResult> ShowForm(BookingViewModel model)
+    {
+        var menu = await db.MenuItems.AsNoTracking().OrderBy(m => m.ItemName).ToListAsync();
+        ViewBag.MenuItemsByCategory = menu.GroupBy(m => m.Category).ToDictionary(g => g.Key, g => g.ToList());
+        ViewBag.FeeTiers = FeeTiers;
+        return View("Create", model);
     }
 }

@@ -1,132 +1,88 @@
-using Microsoft.AspNetCore.Mvc;
-using EventPack.Models.Db;
-using Microsoft.Extensions.Configuration.UserSecrets;
 using System.Security.Cryptography;
 using System.Text;
+using EventPack.Models.Db;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EventPack.Controllers;
 
-public class AccountController : Controller
+public class AccountController(Csi402projectContext db, IPasswordHasher<Userinformation> passwords, IConfiguration config) : Controller
 {
-    private readonly Csi402projectContext Db;
+    [HttpGet]
+    public IActionResult Register() => View();
 
-    public AccountController(Csi402projectContext context)
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> Register(string? name, string? password, string? confirmPassword, string? phone, string? address)
     {
-        Db = context;
-    }
-
-    private string HashPassword(string password)
-    {
-        using (var sha256 = SHA256.Create())
+        name = name?.Trim();
+        if (string.IsNullOrWhiteSpace(name) || name.Length > 10 || password is null ||
+            password.Length is < 8 or > 128 || password != confirmPassword || phone?.Length > 15 || address?.Length > 255)
         {
-            var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-            return Convert.ToBase64String(hashedBytes);
-        }
-    }
-
-    private bool VerifyPassword(string password, string hash)
-    {
-        var hashOfInput = HashPassword(password);
-        return hashOfInput.Equals(hash);
-    }
-
-    public IActionResult Register()
-    {
-        return View();
-    }
-
-    [HttpPost]
-    public IActionResult Register(string name, string password, string phone = "", string address = "", string role = "customer")
-    {
-        if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(password))
-        {
-            ViewBag.ErrorMessage = "กรุณากรอกชื่อผู้ใช้และรหัสผ่าน";
+            ViewBag.ErrorMessage = "ใช้ชื่อผู้ใช้ไม่เกิน 10 ตัวอักษร รหัสผ่าน 8–128 ตัวอักษร และกรอกข้อมูลให้ครบ";
             return View();
         }
-
-        // Check if user already exists
-        var existingUser = Db.Userinformations.FirstOrDefault(u => u.UserId == name);
-        if (existingUser != null)
+        if (string.Equals(name, config["Admin:UserId"], StringComparison.OrdinalIgnoreCase) ||
+            await db.Userinformations.AnyAsync(u => u.UserId == name))
         {
             ViewBag.ErrorMessage = "ชื่อผู้ใช้นี้มีอยู่แล้ว กรุณาเลือกชื่ออื่น";
             return View();
         }
-
-        var user = new Userinformation
+        var user = new Userinformation { UserId = name, FullName = name, UserPhone = phone, UserAddress = address, Role = "customer" };
+        user.UserPassword = passwords.HashPassword(user, password);
+        db.Userinformations.Add(user);
+        try { await db.SaveChangesAsync(); }
+        catch (DbUpdateException)
         {
-            UserId = name,
-            FullName = name,
-            UserPhone = phone,
-            UserAddress = address,
-            UserPassword = HashPassword(password),
-            Role = role
-        };
-
-        try
-        {
-            Db.Userinformations.Add(user);
-            Db.SaveChanges();
-
-            TempData["SuccessMessage"] = "สร้างบัญชีสำเร็จ กรุณาเข้าสู่ระบบ";
-            return RedirectToAction("Login");
-        }
-        catch (Exception ex)
-        {
-            ViewBag.ErrorMessage = $"เกิดข้อผิดพลาดในการสร้างบัญชี: {ex.Message}";
+            ViewBag.ErrorMessage = "สร้างบัญชีไม่สำเร็จ กรุณาใช้ชื่ออื่นหรือลองอีกครั้ง";
             return View();
         }
+        TempData["SuccessMessage"] = "สร้างบัญชีสำเร็จ กรุณาเข้าสู่ระบบ";
+        return RedirectToAction(nameof(Login));
     }
 
     [HttpGet]
-    public IActionResult Login()
+    public IActionResult Login() => View();
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> Login(string? name, string? password)
     {
-        return View();
-    }
+        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrEmpty(password) || password.Length > 128)
+            return InvalidLogin();
 
-    [HttpPost]
-    public IActionResult Login(string name, string password)
-    {
-        if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(password))
+        var user = await db.Userinformations.FindAsync(name.Trim());
+        if (user is null || string.IsNullOrEmpty(user.UserPassword)) return InvalidLogin();
+        var result = passwords.VerifyHashedPassword(user, user.UserPassword, password);
+        // Existing accounts used a base64-encoded SHA-256 digest. Upgrade a verified legacy password on login.
+        if (result == PasswordVerificationResult.Failed && user.UserPassword.Length == 44 &&
+            CryptographicOperations.FixedTimeEquals(Encoding.ASCII.GetBytes(user.UserPassword),
+                Encoding.ASCII.GetBytes(Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(password))))))
+            result = PasswordVerificationResult.SuccessRehashNeeded;
+        if (result == PasswordVerificationResult.Failed) return InvalidLogin();
+        if (result == PasswordVerificationResult.SuccessRehashNeeded)
         {
-            ViewBag.ErrorMessage = "กรุณากรอกชื่อผู้ใช้และรหัสผ่าน";
-            return View();
-        }
-
-        var user = Db.Userinformations.FirstOrDefault(u => u.UserId == name);
-        
-        if (user == null)
-        {
-            ViewBag.ErrorMessage = $"ไม่พบผู้ใช้ '{name}' ในระบบ โปรดสมัครสมาชิกก่อน";
-            return View();
-        }
-        
-        if (string.IsNullOrEmpty(user.UserPassword))
-        {
-            ViewBag.ErrorMessage = "เกิดข้อผิดพลาดในการตรวจสอบ โปรดลองใหม่";
-            return View();
-        }
-        
-        if (!VerifyPassword(password, user.UserPassword))
-        {
-            ViewBag.ErrorMessage = "รหัสผ่านไม่ถูกต้อง โปรดลองใหม่";
-            return View();
+            user.UserPassword = passwords.HashPassword(user, password);
+            await db.SaveChangesAsync();
         }
 
+        var isAdmin = user.Role == "admin" && string.Equals(user.UserId, config["Admin:UserId"], StringComparison.OrdinalIgnoreCase);
+        HttpContext.Session.Clear();
         HttpContext.Session.SetString("UserId", user.UserId);
-        HttpContext.Session.SetString("FullName", user.FullName ?? "");
-        HttpContext.Session.SetString("Role", user.Role ?? "customer");
-        
-        ViewBag.SuccessMessage = $"ยินดีต้อนรับ {user.FullName}! เข้าสู่ระบบสำเร็จ";
-        
-        return RedirectToAction("Index", "Home");
+        HttpContext.Session.SetString("FullName", user.FullName ?? user.UserId);
+        HttpContext.Session.SetString("Role", isAdmin ? "admin" : "customer");
+        return isAdmin ? RedirectToAction("Index", "Admin") : RedirectToAction("Index", "Home");
     }
-    
-    [HttpGet]
+
+    [HttpPost, ValidateAntiForgeryToken]
     public IActionResult Logout()
     {
-        HttpContext.Session.Remove("UserId");
-        HttpContext.Session.Remove("FullName");
-        HttpContext.Session.Remove("Role");
+        HttpContext.Session.Clear();
         return RedirectToAction("Index", "Home");
+    }
+
+    private IActionResult InvalidLogin()
+    {
+        ViewBag.ErrorMessage = "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
+        return View("Login");
     }
 }

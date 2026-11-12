@@ -1,0 +1,23 @@
+@model List<EventPack.Models.Db.MenuItem>
+@{ ViewData["Title"] = "จัดการเมนูอาหาร"; }
+<section class="container py-4">
+    <nav class="mb-3" aria-label="เมนูผู้ดูแล"><a asp-action="Index">การจอง</a> · <a asp-action="Menu">เมนูอาหาร</a></nav>
+    <h1>จัดการเมนูอาหาร</h1>
+    @if (TempData["AdminMessage"] is string message) { <p role="status" class="alert alert-info">@message</p> }
+    <form asp-action="SaveMenu" method="post" class="d-flex flex-wrap gap-2 align-items-end border rounded p-3 mb-3">
+        <label>ชื่อเมนูใหม่<input class="form-control" name="itemName" maxlength="100" required /></label>
+        <label>หมวดหมู่<input class="form-control" name="category" maxlength="50" required /></label>
+        <label>ราคาต่อคน<input class="form-control" type="number" name="price" min="0" max="100000" step="0.01" required /></label>
+        <button class="btn btn-primary">เพิ่มเมนู</button>
+    </form>
+    @foreach (var item in Model)
+    {
+        <form asp-action="SaveMenu" method="post" class="d-flex flex-wrap gap-2 align-items-end border rounded p-3 mb-2">
+            <input type="hidden" name="id" value="@item.MenuItemId" />
+            <label>ชื่อเมนู<input class="form-control" name="itemName" value="@item.ItemName" maxlength="100" required /></label>
+            <label>หมวดหมู่<input class="form-control" name="category" value="@item.Category" maxlength="50" required /></label>
+            <label>ราคาต่อคน<input class="form-control" type="number" name="price" value="@item.BasePrice.ToString(System.Globalization.CultureInfo.InvariantCulture)" min="0" max="100000" step="0.01" required /></label>
+            <button class="btn btn-outline-primary">บันทึกการแก้ไข</button>
+        </form>
+    }
+</section>

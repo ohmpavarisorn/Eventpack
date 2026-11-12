@@ -39,12 +39,16 @@
                 <li class="nav-item">
                     <a class="nav-link" asp-controller="Home" asp-action="Index">หน้าแรก</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" asp-controller="Booking" asp-action="MyBookings">📋 การจองของฉัน</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" asp-controller="Product" asp-action="Index">ติดต่อ</a>
-                </li>
+                @if (Context.Session.GetString("Role") == "admin")
+                {
+                    <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="Index">จัดการการจอง</a></li>
+                    <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="Menu">จัดการเมนูอาหาร</a></li>
+                }
+                else
+                {
+                    <li class="nav-item"><a class="nav-link" asp-controller="Booking" asp-action="Create">จองจัดเลี้ยง</a></li>
+                    <li class="nav-item"><a class="nav-link" asp-controller="Booking" asp-action="MyBookings">การจองของฉัน</a></li>
+                }
             </ul>
 
             <!-- User Info & Login/Logout -->
@@ -62,16 +66,11 @@
                             👤 @fullName
                         </a>
                         <ul class="dropdown-menu dropdown-menu-dark">
-                            <li>
-                                <a class="dropdown-item" asp-controller="Booking" asp-action="MyBookings">
-                                    📋 การจองของฉัน
-                                </a>
-                            </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <a class="dropdown-item text-danger" asp-controller="Account" asp-action="Logout">
-                                    🚪 ออกจากระบบ
-                                </a>
+                                <form asp-controller="Account" asp-action="Logout" method="post">
+                                    <button class="dropdown-item text-danger" type="submit">ออกจากระบบ</button>
+                                </form>
                             </li>
                         </ul>
                     </li>

@@ -22,7 +22,7 @@
             <form asp-controller="Account" asp-action="register" method="post">
                 <div class="mb-3">
                     <label for="name" class="form-label">ชื่อผู้ใช้ <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="name" name="Name" placeholder="เลือกชื่อผู้ใช้" required>
+                    <input type="text" class="form-control" id="name" name="Name" placeholder="เลือกชื่อผู้ใช้" maxlength="10" required>
                 </div>
 
                 <div class="mb-3">
@@ -37,7 +37,7 @@
 
                 <div class="mb-3">
                     <label for="password" class="form-label">รหัสผ่าน <span class="text-danger">*</span></label>
-                    <input type="password" class="form-control" id="password" name="Password" placeholder="สร้างรหัสผ่านที่ปลอดภัย" required>
+                    <input type="password" class="form-control" id="password" name="Password" placeholder="อย่างน้อย 8 ตัวอักษร" minlength="8" maxlength="128" required>
                 </div>
 
                 <div class="mb-3">
@@ -45,14 +45,6 @@
                     <input type="password" class="form-control" id="confirmPassword" name="ConfirmPassword" placeholder="ยืนยันรหัสผ่านของคุณ" required>
                 </div>
 
-                <div class="mb-3">
-                    <label for="role" class="form-label">ประเภทบัญชี <span class="text-danger">*</span></label>
-                    <select class="form-control" id="role" name="Role" required>
-                        <option value="customer" selected>ลูกค้า (Customer)</option>
-                        <option value="admin">ผู้ดูแลระบบ (Admin)</option>
-                    </select>
-                    <small class="form-text">เลือกประเภทบัญชีที่เหมาะสม</small>
-                </div>
 
                 <div class="d-grid">
                     <button type="submit" class="btn btn-primary btn-lg">

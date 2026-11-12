@@ -1,13 +1,13 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Identity;
 using EventPack.Models.Db;
-using EventPack.Utilities;
-using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddScoped<IPasswordHasher<Userinformation>, PasswordHasher<Userinformation>>();
 
 // Add Session
 builder.Services.AddSession(options =>
@@ -15,28 +15,19 @@ builder.Services.AddSession(options =>
     options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    if (!builder.Environment.IsDevelopment()) options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 });
 
+var connection = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(connection))
+    throw new InvalidOperationException("Set ConnectionStrings__DefaultConnection for EventPack.");
+
 builder.Services.AddDbContext<Csi402projectContext>(options =>
-    options.UseMySql(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        ServerVersion.AutoDetect(
-            builder.Configuration.GetConnectionString("DefaultConnection")
-        )
-    )
+    options.UseMySql(connection, ServerVersion.AutoDetect(connection), mysql => mysql.EnableRetryOnFailure())
 );
 
 var app = builder.Build();
-
-// Create restaurant database tables if they don't exist
-try
-{
-    await DatabaseInitializer.ExecuteSqlScriptAsync();
-}
-catch (Exception ex)
-{
-    Console.WriteLine($"⚠ Warning: Could not initialize tables: {ex.Message}");
-}
 
 if (!app.Environment.IsDevelopment())
 {
@@ -44,7 +35,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+// Render terminates HTTPS before proxying requests to Kestrel.
+if (!app.Configuration.GetValue<bool>("RENDER")) app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 // Add Session Middleware
@@ -59,21 +51,28 @@ using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<Csi402projectContext>();
     
-    // Add MenuItemsJson column if it doesn't exist
-    try
+    await context.Database.EnsureCreatedAsync();
+    var adminId = app.Configuration["Admin:UserId"];
+    var adminPassword = app.Configuration["Admin:InitialPassword"];
+    if (!string.IsNullOrWhiteSpace(adminId) && !string.IsNullOrEmpty(adminPassword))
     {
-        context.Database.ExecuteSqlRaw(@"
-            ALTER TABLE bookings 
-            ADD COLUMN MenuItemsJson longtext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL
-        ");
-    }
-    catch
-    {
-        // Column likely already exists, ignore error
+        if (adminId.Length > 10 || adminPassword.Length < 12)
+            throw new InvalidOperationException("Set an admin ID of at most 10 characters and a password of at least 12 characters.");
+        var admin = await context.Userinformations.FindAsync(adminId);
+        if (admin is null)
+        {
+            admin = new Userinformation { UserId = adminId, FullName = "EventPack Admin", Role = "admin" };
+            admin.UserPassword = scope.ServiceProvider.GetRequiredService<IPasswordHasher<Userinformation>>().HashPassword(admin, adminPassword);
+            context.Userinformations.Add(admin);
+        }
+        else if (admin.Role != "admin")
+        {
+            throw new InvalidOperationException("Admin ID is already in use by a customer.");
+        }
     }
     
     // Seed MenuItems if empty
-    if (!context.MenuItems.Any())
+    if (!await context.MenuItems.AnyAsync())
     {
         context.MenuItems.AddRange(
             new MenuItem
@@ -105,9 +104,11 @@ using (var scope = app.Services.CreateScope())
                 BasePrice = 80m
             }
         );
-        context.SaveChanges();
     }
+    await context.SaveChangesAsync();
 }
+
+app.MapGet("/healthz", () => Results.Ok());
 
 app.MapControllerRoute(
     name: "default",

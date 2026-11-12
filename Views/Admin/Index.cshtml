@@ -1,0 +1,39 @@
+@model List<EventPack.Models.Db.Booking>
+@{
+    ViewData["Title"] = "จัดการการจอง";
+    string StatusLabel(string? status) => status switch { "confirmed" => "ยืนยันแล้ว", "cancelled" => "ยกเลิกแล้ว", _ => "รอการยืนยัน" };
+}
+<section class="container py-4">
+    <nav class="mb-3" aria-label="เมนูผู้ดูแล"><a asp-action="Index">การจอง</a> · <a asp-action="Menu">เมนูอาหาร</a></nav>
+    <h1>จัดการการจอง</h1>
+    @if (TempData["AdminMessage"] is string message) { <p role="status" class="alert alert-info">@message</p> }
+    <div class="d-flex gap-3 flex-wrap my-3">
+        <a asp-action="Index">ทั้งหมด</a><a asp-action="Index" asp-route-status="pending">รอการยืนยัน</a><a asp-action="Index" asp-route-status="confirmed">ยืนยันแล้ว</a><a asp-action="Index" asp-route-status="cancelled">ยกเลิกแล้ว</a>
+    </div>
+    @if (Model.Count == 0) { <p>ยังไม่มีรายการในกลุ่มนี้</p> }
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead><tr><th scope="col">การจอง</th><th scope="col">วันจัดงาน</th><th scope="col">จำนวนแขก</th><th scope="col">ราคา</th><th scope="col">สถานะ</th><th scope="col">จัดการ</th></tr></thead>
+            <tbody>
+            @foreach (var booking in Model)
+            {
+                <tr>
+                    <td><strong>@booking.BookingId</strong><br />@booking.UserIdNavigation?.FullName<br />@booking.EventLocation</td>
+                    <td>@booking.EventDate?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)</td><td>@booking.TotalGuests</td>
+                    <td>฿ @booking.TotalPrice?.ToString("N2")</td><td>@StatusLabel(booking.BookingStatus)</td>
+                    <td>
+                        @if (booking.BookingStatus == "pending")
+                        {
+                            <form asp-action="UpdateBooking" method="post" class="d-flex gap-2 flex-wrap">
+                                <input type="hidden" name="bookingId" value="@booking.BookingId" />
+                                <button class="btn btn-sm btn-primary" name="status" value="confirmed">ยืนยัน</button>
+                                <button class="btn btn-sm btn-outline-danger" name="status" value="cancelled">ยกเลิก</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</section>

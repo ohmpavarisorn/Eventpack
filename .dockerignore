@@ -1,0 +1,7 @@
+.git
+.vs
+bin
+obj
+docs
+QR
+appsettings.Development.json

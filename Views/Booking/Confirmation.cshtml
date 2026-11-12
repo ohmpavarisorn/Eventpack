@@ -107,7 +107,7 @@
 
             <div class="detail-row">
                 <span class="label">สถานะ:</span>
-                <span class="value status pending">รอการยืนยัน</span>
+                <span class="value status @Model.BookingStatus">@(Model.BookingStatus switch { "confirmed" => "ยืนยันแล้ว", "cancelled" => "ยกเลิกแล้ว", _ => "รอการยืนยัน" })</span>
             </div>
 
             <div class="info-box">

@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: eventpack-web
+    runtime: docker
+    plan: free
+    healthCheckPath: /healthz
+    envVars:
+      - key: ConnectionStrings__DefaultConnection
+        sync: false
+      - key: Admin__UserId
+        sync: false
+      - key: Admin__InitialPassword
+        sync: false
