@@ -44,7 +44,7 @@ public class BookingController(Csi402projectContext db) : Controller
             UserId = customer.UserId,
             TotalGuests = model.TotalGuests,
             EventLocation = model.EventLocation!.Trim(),
-            EventDate = model.EventDate,
+            EventDate = DateTime.SpecifyKind(model.EventDate!.Value.Date, DateTimeKind.Unspecified),
             TotalPrice = totalMenuPrice + operationFee,
             MenuItemsJson = JsonSerializer.Serialize(new { items = menu.Select(item => item.ItemName), pricePerPerson, operationFee, totalMenuPrice }),
             BookingStatus = "pending",

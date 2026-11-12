@@ -5,7 +5,9 @@ services:
     plan: free
     healthCheckPath: /healthz
     envVars:
-      - key: ConnectionStrings__DefaultConnection
+      - key: Database__Provider
+        value: PostgreSQL
+      - key: DATABASE_URL
         sync: false
       - key: Admin__UserId
         sync: false

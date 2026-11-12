@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using EventPack.Models.Db;
+using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,13 +20,45 @@ builder.Services.AddSession(options =>
     if (!builder.Environment.IsDevelopment()) options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 });
 
-var connection = builder.Configuration.GetConnectionString("DefaultConnection");
+var provider = builder.Configuration["Database:Provider"] ?? "MySQL";
+var connection = builder.Configuration.GetConnectionString("DefaultConnection") ?? builder.Configuration["DATABASE_URL"];
 if (string.IsNullOrWhiteSpace(connection))
     throw new InvalidOperationException("Set ConnectionStrings__DefaultConnection for EventPack.");
 
-builder.Services.AddDbContext<Csi402projectContext>(options =>
-    options.UseMySql(connection, ServerVersion.AutoDetect(connection), mysql => mysql.EnableRetryOnFailure())
-);
+if (provider.Equals("PostgreSQL", StringComparison.OrdinalIgnoreCase))
+{
+    if (Uri.TryCreate(connection, UriKind.Absolute, out var uri) && uri.Scheme is "postgres" or "postgresql")
+    {
+        var credentials = uri.UserInfo.Split(':', 2);
+        if (credentials.Length != 2) throw new InvalidOperationException("DATABASE_URL requires a username and password.");
+        var postgres = new NpgsqlConnectionStringBuilder
+        {
+            Host = uri.Host,
+            Port = uri.Port > 0 ? uri.Port : 5432,
+            Database = Uri.UnescapeDataString(uri.AbsolutePath.TrimStart('/')),
+            Username = Uri.UnescapeDataString(credentials[0]),
+            Password = Uri.UnescapeDataString(credentials[1]),
+            SslMode = SslMode.Require,
+            MaxPoolSize = 8
+        };
+        if (builder.Configuration["Database:RootCertificate"] is { Length: > 0 } certificate)
+        {
+            postgres.RootCertificate = certificate;
+            postgres.SslMode = SslMode.VerifyFull;
+        }
+        connection = postgres.ConnectionString;
+    }
+    builder.Services.AddDbContext<Csi402projectContext>(options => options.UseNpgsql(connection, pg => pg.EnableRetryOnFailure()));
+}
+else if (provider.Equals("MySQL", StringComparison.OrdinalIgnoreCase))
+{
+    builder.Services.AddDbContext<Csi402projectContext>(options =>
+        options.UseMySql(connection, ServerVersion.AutoDetect(connection), mysql => mysql.EnableRetryOnFailure()));
+}
+else
+{
+    throw new InvalidOperationException("Set Database__Provider to MySQL or PostgreSQL.");
+}
 
 var app = builder.Build();
 

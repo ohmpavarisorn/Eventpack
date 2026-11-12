@@ -2,13 +2,14 @@
 
 The original ASP.NET Core app runs from the root Dockerfile. The `docs/` folder is the independent, browser-only GitHub Pages demo.
 
-1. Create an Aiven for MySQL service on the Free plan. Use an empty database for this portfolio instance. Configure MySQL Connector/NET to use TLS and validate the Aiven CA (for example, `SslMode=VerifyFull;SslCa=/etc/secrets/aiven-ca.pem` when the CA is mounted as a Render secret file).
+1. Create an Aiven for PostgreSQL service on the Free plan. Use an empty database for this portfolio instance. The Aiven service URI can be used directly and connects over TLS. For certificate verification, add the Aiven CA as a Render secret file and set `Database__RootCertificate=/etc/secrets/aiven-ca.pem`.
 2. Create a Render Free Web Service using the repository and the Docker runtime. Select this branch until the changes are merged. Set the health check path to `/healthz`. The `render.yaml` also defines these settings for a Blueprint.
 3. Set the following values in Render's environment settings. Keep credentials in the provider settings.
 
 | Variable | Value |
 | --- | --- |
-| `ConnectionStrings__DefaultConnection` | MySQL connection string for the empty database, including hostname, port, database, credentials and TLS settings |
+| `Database__Provider` | `PostgreSQL` for Aiven Free. Omit this to use the original MySQL provider. |
+| `DATABASE_URL` | PostgreSQL service URI for the empty database. For MySQL or a native Npgsql connection string, set `ConnectionStrings__DefaultConnection` instead. |
 | `Admin__UserId` | Owner account name of 1–10 characters |
 | `Admin__InitialPassword` | Initial password of at least 12 characters. Used only to create the owner account on first start. |
 
